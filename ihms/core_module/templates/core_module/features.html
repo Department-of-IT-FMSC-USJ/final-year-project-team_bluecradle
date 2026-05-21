@@ -1,0 +1,518 @@
+{% extends 'core_module/base.html' %}
+
+{% block content %}
+<main>
+
+    <!-- Hero Section -->
+    <section class="px-6 pb-16 pt-36 md:pt-30 md:pb-24 max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-12 gap-12 items-center">
+            <div class="md:col-span-6 space-y-8">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary-container/30 text-secondary border border-secondary/20 text-sm font-label font-medium tracking-wide">
+                    <span class="material-symbols-outlined text-sm">verified_user</span>
+                    NDHGS &amp; Personal Data Protection Act Compliant
+                </span>
+                <h1 class="text-5xl md:text-7xl font-display font-extrabold text-primary leading-[1.1] tracking-tight">
+                    One Record. Zero Paperwork. Every Child Protected.
+                </h1>
+                <p class="text-xl text-on-surface-variant leading-relaxed max-w-xl">
+                    BlueCradle is Sri Lanka's offline-first Infant and Child Health Monitoring System — built for PHMs in the field, parents at home, and MOH officers overseeing divisions.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="#" class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                        PHM Registration <span class="material-symbols-outlined">arrow_forward</span>
+                    </a>
+                    <a href="#" class="bg-surface-container hover:bg-surface-container-high text-primary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                        Parent Portal Access
+                    </a>
+                </div>
+            </div>
+            <div class="md:col-span-6 relative">
+                <div class="absolute -inset-4 bg-primary/5 rounded-[2rem] -rotate-2"></div>
+                <img alt="BlueCradle PHM Dashboard Preview" class="relative rounded-xl shadow-2xl border border-outline-variant/20 w-full"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjr97SOk9W_HuVPfsBa9cBJ5pHMUvhTRKqlOm5LNI6AIh_GzXeKfsqbRJcWX164Xdx783xCs7rE7UYQj4FHYoYmNpTiCho7YpJzOH7bEHxjY_JzAhThaHPTflNQaNi9hqQfdmbOjS6YWtseOBy-F8aimUmrYNFHWSED6A8__Ed6yNX2J28wDwGrzGF-quSoQ7RTRuXhdwRVNPohh1pm-y_9sgVT3XZNyr7caIychKUmDOoQlVsOCIr9pbFmwPz5RV0x-AX9yd7a06M"/>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Tabs Navigation -->
+    <section class="py-16 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-12 space-y-4">
+            <h2 class="text-3xl md:text-4xl font-display font-bold text-primary">Built for Every Role in the System</h2>
+            <p class="text-on-surface-variant max-w-2xl mx-auto">Three distinct user experiences — one shared clinical record. Every action by every role feeds the same atomic data pipeline.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- PHM Card -->
+            <div class="p-6 bg-primary rounded-2xl text-on-primary space-y-3 shadow-lg">
+                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-2xl">local_hospital</span>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-widest opacity-70">For PHMs</p>
+                <h3 class="text-2xl font-display font-bold">Clinical Workflow Engine</h3>
+                <p class="text-sm opacity-80 leading-relaxed">Offline-first clinic sessions, WHO Z-scores, vaccination tracking, H 523 auto-generation, and ML risk alerts — all from one dashboard.</p>
+            </div>
+            <!-- Parent Card -->
+            <div class="p-6 bg-secondary rounded-2xl text-on-secondary space-y-3 shadow-lg">
+                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-2xl">family_restroom</span>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-widest opacity-70">For Parents</p>
+                <h3 class="text-2xl font-display font-bold">Shared Family Portal</h3>
+                <p class="text-sm opacity-80 leading-relaxed">Simplified growth data in Sinhala or Tamil, in-app clinic reminders, vaccination alerts, and offline CHDR PDF export for both parents.</p>
+            </div>
+            <!-- MOH Card -->
+            <div class="p-6 bg-surface-container rounded-2xl text-on-surface space-y-3 shadow-lg border border-outline-variant/20">
+                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-2xl">admin_panel_settings</span>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">For MOH Officers</p>
+                <h3 class="text-2xl font-display font-bold text-primary">Divisional Oversight</h3>
+                <p class="text-sm text-on-surface-variant leading-relaxed">Read-only aggregated dashboard across all PHM areas in the division, with cryptographic audit trail access and compliance monitoring.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHM FEATURES -->
+    <!-- ============================================================ -->
+    <section class="py-8 px-6 max-w-7xl mx-auto">
+        <div class="flex items-center gap-4 mb-16">
+            <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-on-primary text-xl">local_hospital</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Public Health Midwives</p>
+                <h2 class="text-3xl font-display font-bold text-primary">PHM Feature Suite</h2>
+            </div>
+        </div>
+
+        <div class="space-y-32">
+
+            <!-- PHM Feature 1: Offline-First -->
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="order-2 md:order-1">
+                    <div class="aspect-video bg-surface-container-low rounded-xl overflow-hidden relative border border-outline-variant/10">
+                        <img alt="Offline Sync Status" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc1rXcuqUMKo0Twi3JgwP2p6uGLXxvgqmBQg9frdmULXq5s2tlRaIeWb3MTsgBBVOnoDnHu0UxBjN90oqBYa4lRYvU41GMiDddEwD995aD4001sjFahjxyBnw9Uf4z0_leeQmFg9u23f0RiVYr0r-O3kfYwNbTzRFvtfYihcAoYRrSQ3uaKnV5qAfYQds4ZfKxmst_YxqObDh7VRojP4a6Oz8Vq6Fpyqgc5G6sSjYFVLUfdZ5hWVn5DfH3LEbzg3jcv934JwMxl3m8"/>
+                        <div class="absolute bottom-6 left-6 right-6 p-4 bg-surface-container-lowest/90 backdrop-blur-md rounded-lg shadow-sm flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">cloud_done</span>
+                            <div>
+                                <p class="text-label-md font-bold text-primary">Priority Sync Complete</p>
+                                <p class="text-label-sm text-on-surface-variant">SAM alerts → Vaccinations → Admin data transmitted</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2 space-y-6">
+                    <div class="w-14 h-14 bg-primary-container/10 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-3xl">wifi_off</span>
+                    </div>
+                    <h3 class="text-4xl font-display font-bold text-primary">Offline-First Clinic Sessions</h3>
+                    <p class="text-lg text-on-surface-variant leading-relaxed">
+                        PHMs in areas like Deraniyagala experience complete network blackouts. BlueCradle's <strong>IndexedDB architecture</strong> pre-syncs all infant profiles to the device before the clinic session. Every measurement, vaccination, and alert is written locally — nothing waits for a network call.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-secondary mt-1">check_circle</span>
+                            <span class="text-on-surface font-medium">Auto-detects latency &gt;3 seconds and switches to offline mode.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-secondary mt-1">check_circle</span>
+                            <span class="text-on-surface font-medium">Background Sync API fires automatically on Wi-Fi restoration — no PHM action needed.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-secondary mt-1">check_circle</span>
+                            <span class="text-on-surface font-medium">Priority queue: SAM/MAM alerts transmitted first, routine admin last.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PHM Feature 2: Growth Monitoring & Z-Scores -->
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="space-y-6">
+                    <div class="w-14 h-14 bg-secondary-container/20 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary text-3xl">monitoring</span>
+                    </div>
+                    <h3 class="text-4xl font-display font-bold text-primary">Real-Time WHO Growth Monitoring</h3>
+                    <p class="text-lg text-on-surface-variant leading-relaxed">
+                        Enter weight and height — BlueCradle instantly calculates <strong>WHZ, WAZ, and HAZ Z-scores</strong> using WHO Child Growth Standards via the <code class="bg-surface-container px-1.5 py-0.5 rounded text-sm">igrowup</code> library. The growth trajectory chart renders on-device for immediate parental counselling during the clinic visit.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pt-4">
+                        <div class="p-4 bg-error-container/30 rounded-xl border border-error/10">
+                            <p class="text-label-sm text-error font-bold uppercase tracking-wider">SAM — Critical</p>
+                            <p class="text-sm text-on-error-container mt-1">WHZ &lt; -3 SD or MUAC &lt; 115mm or bilateral oedema</p>
+                        </div>
+                        <div class="p-4 bg-tertiary-fixed-dim/20 rounded-xl border border-tertiary/10">
+                            <p class="text-label-sm text-on-tertiary-fixed-variant font-bold uppercase tracking-wider">MAM — Warning</p>
+                            <p class="text-sm text-on-tertiary-container mt-1">WHZ -3 to -2 SD or MUAC 115–125mm</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <img alt="WHO Growth Chart" class="rounded-xl shadow-xl border border-outline-variant/20"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6yhQ3dC5N762jBQ3CX3XpFlV0d8XvGwnYq5K0yOjcMI43MpKlKbaJugqPpdk31mh0oFcJQmoKGDhcQznoUr_31H-gR8098l6O9eRbhrQeompLiLPmvEqBbg8M8fJB7FIZYJFl6wiuhUww_oKboWes306c_Rfkr01tMNzY3X0OM9GSvYAYYzEpULWjtZuh5YIhdRBEUa1ouGHSzfJ_yxQj5w71AClxm4zFT5h-imvMtsCwMUeSqYGZ9mlNYLrNpuWVqAfe81_TKQ-1"/>
+                </div>
+            </div>
+
+            <!-- PHM Feature 3: Vaccination Tracking -->
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="order-2 md:order-1">
+                    <div class="p-8 bg-surface-container-low rounded-[2rem] relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                        <div class="space-y-4 relative">
+                            <div class="bg-white p-4 rounded-xl shadow-sm">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-sm text-error">warning</span>
+                                    </div>
+                                    <p class="text-xs font-bold text-error">Defaulter Alert — Overdue 14 days</p>
+                                </div>
+                                <p class="text-sm text-on-surface"><strong>Ahamed Rizvi</strong> — Pentavalent-1 overdue. Grace period exceeded. Domiciliary follow-up required.</p>
+                            </div>
+                            <div class="bg-primary p-4 rounded-xl shadow-lg">
+                                <p class="text-xs font-bold text-on-primary-fixed mb-1 uppercase opacity-70">EPI 3/79 Register — Auto-Logged</p>
+                                <p class="text-sm text-white font-medium">Batch: BL-2024-0491 · Dose: OPV-2 · Adverse events: None · Logged 09:14 AM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2 space-y-6">
+                    <div class="w-14 h-14 bg-primary-container/10 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-3xl">vaccines</span>
+                    </div>
+                    <h3 class="text-4xl font-display font-bold text-primary">Immunization Tracking &amp; Defaulter Flagging</h3>
+                    <p class="text-lg text-on-surface-variant leading-relaxed">
+                        The system maps each infant's age against the <strong>National Immunization Schedule</strong>, tracks batch numbers, dose sequencing, and adverse events, and automatically calculates strict two-week grace periods. Defaulters are flagged instantly — no manual tally required.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-secondary mt-1">check_circle</span>
+                            <span class="text-on-surface font-medium">Full EPI 3/79 Register entries auto-logged per vaccination event.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-secondary mt-1">check_circle</span>
+                            <span class="text-on-surface font-medium">Two-week grace period calculated automatically per vaccine.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-secondary mt-1">check_circle</span>
+                            <span class="text-on-surface font-medium">Defaulter alerts prioritized in the sync queue for immediate clinical action.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PHM Feature 4: H 523 + ML — Full-width highlight -->
+            <div class="bg-primary text-on-primary rounded-[2.5rem] p-8 md:p-16 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary-container to-transparent opacity-50"></div>
+                <div class="relative z-10 grid md:grid-cols-12 gap-12 items-center">
+                    <div class="md:col-span-7 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white text-label-md font-semibold backdrop-blur-sm">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                            Automated Reporting + AI/ML
+                        </div>
+                        <h3 class="text-4xl md:text-5xl font-display font-bold">H 523 in Under 3 Seconds. SAM Predicted Before It's Critical.</h3>
+                        <p class="text-xl text-on-primary-container leading-relaxed">
+                            Every clinical action is stored as an atomic event with an FHB service code. At day end, one click generates the <strong>Form H 523 Daily Statement</strong> — eliminating 40 minutes of manual tallying. Simultaneously, the LSTM + Feedforward ML model predicts SAM/MAM risk from growth trajectories across visits.
+                        </p>
+                        <div class="flex flex-wrap gap-8 pt-4">
+                            <div>
+                                <p class="text-3xl font-display font-bold">&lt;3s</p>
+                                <p class="text-label-sm opacity-70">H 523 Generation Time</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-display font-bold">6</p>
+                                <p class="text-label-sm opacity-70">Forms Automated from One Input</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-5">
+                        <div class="bg-surface-container-lowest/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-label-md font-bold">ML Risk Assessment</span>
+                                <span class="px-2 py-0.5 rounded bg-error text-[10px] font-black uppercase">High Risk</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-white/5 rounded-lg border border-white/5 flex gap-3">
+                                    <span class="material-symbols-outlined text-error">warning</span>
+                                    <div>
+                                        <p class="text-sm font-bold">SAM Risk — 0.81 Confidence</p>
+                                        <p class="text-xs opacity-60">Kavith Fernando · 7 months · WHZ velocity −12%</p>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-white/5 rounded-lg border border-white/5 flex gap-3">
+                                    <span class="material-symbols-outlined text-tertiary-fixed-dim">description</span>
+                                    <div>
+                                        <p class="text-sm font-bold">H 523 Ready to Generate</p>
+                                        <p class="text-xs opacity-60">34 atomic events logged · Today, Deraniyagala clinic</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PARENT FEATURES -->
+    <!-- ============================================================ -->
+    <section class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="flex items-center gap-4 mb-16">
+            <div class="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-on-secondary text-xl">family_restroom</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Parents &amp; Guardians</p>
+                <h2 class="text-3xl font-display font-bold text-primary">Parent Portal Features</h2>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Parent Feature 1 -->
+            <div class="p-8 bg-surface-container-low rounded-2xl space-y-4 border border-outline-variant/10">
+                <div class="w-12 h-12 bg-secondary-container/30 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-2xl">translate</span>
+                </div>
+                <h3 class="text-xl font-display font-bold text-primary">Health-Literate Growth Summary</h3>
+                <p class="text-on-surface-variant leading-relaxed">Complex WHO Z-scores are translated into plain-language growth summaries in <strong>Sinhala or Tamil</strong>. Both parents see the same simplified data, eliminating confusion and improving household compliance with nutritional advice.</p>
+                <div class="flex gap-2 pt-2">
+                    <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-xs font-bold">සිංහල</span>
+                    <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-xs font-bold">தமிழ்</span>
+                    <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-xs font-bold">English</span>
+                </div>
+            </div>
+
+            <!-- Parent Feature 2 -->
+            <div class="p-8 bg-surface-container-low rounded-2xl space-y-4 border border-outline-variant/10">
+                <div class="w-12 h-12 bg-secondary-container/30 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-2xl">notifications_active</span>
+                </div>
+                <h3 class="text-xl font-display font-bold text-primary">In-App Clinic &amp; Vaccination Reminders</h3>
+                <p class="text-on-surface-variant leading-relaxed">Automated push notifications for upcoming clinic dates and overdue vaccinations — delivered directly to the parent portal. No WhatsApp, no SMS gateway, no excuse culture. Immutable, timestamped, and directly tied to the National Immunization Schedule.</p>
+                <div class="p-3 bg-secondary/10 rounded-lg mt-2">
+                    <p class="text-xs text-secondary font-bold">📅 Upcoming: BCG Dose · Colombo North Clinic · Tomorrow, 8:30 AM</p>
+                </div>
+            </div>
+
+            <!-- Parent Feature 3 -->
+            <div class="p-8 bg-surface-container-low rounded-2xl space-y-4 border border-outline-variant/10">
+                <div class="w-12 h-12 bg-secondary-container/30 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-2xl">picture_as_pdf</span>
+                </div>
+                <h3 class="text-xl font-display font-bold text-primary">Offline CHDR PDF Export</h3>
+                <p class="text-on-surface-variant leading-relaxed">One-tap download of a localized PDF replica of the digital Child Health Development Record (CHDR). Stored on the device — accessible even without internet. A physical backup that builds digital trust without abandoning the paper-based safety net parents rely on.</p>
+                <ul class="space-y-2 pt-2">
+                    <li class="flex items-center gap-2 text-sm text-on-surface">
+                        <span class="material-symbols-outlined text-secondary text-base">check_circle</span>
+                        Works completely offline once downloaded
+                    </li>
+                    <li class="flex items-center gap-2 text-sm text-on-surface">
+                        <span class="material-symbols-outlined text-secondary text-base">check_circle</span>
+                        Shared household access — one PHN, both parents
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Parent self-registration note -->
+        <div class="mt-10 p-6 bg-secondary/5 border border-secondary/20 rounded-2xl flex items-start gap-4">
+            <span class="material-symbols-outlined text-secondary text-3xl shrink-0">info</span>
+            <div>
+                <p class="font-bold text-primary">How parents access BlueCradle</p>
+                <p class="text-on-surface-variant mt-1">Parents register independently using the <strong>Personal Health Number (PHN)</strong> printed on their physical CHDR booklet. No PHM involvement required. One shared household credential gives both parents read-only access to their child's digital record.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- MOH FEATURES -->
+    <!-- ============================================================ -->
+    <section class="bg-surface-container-low py-24 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center gap-4 mb-16">
+                <div class="w-10 h-10 bg-surface-container-high border border-outline-variant rounded-xl flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-primary text-xl">admin_panel_settings</span>
+                </div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Medical Officers of Health</p>
+                    <h2 class="text-3xl font-display font-bold text-primary">MOH Divisional Features</h2>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="space-y-6">
+                    <h3 class="text-4xl font-display font-bold text-primary">Divisional Oversight Without the Paperwork</h3>
+                    <p class="text-lg text-on-surface-variant leading-relaxed">
+                        Every atomic clinical event logged by every PHM in the division is tagged with an <code class="bg-surface-container px-1.5 py-0.5 rounded text-sm">moh_division</code> field. The MOH dashboard aggregates this data in real time — malnutrition rates, immunization default frequencies, and PHM activity across all areas — without requiring manual returns.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
+                            <span class="material-symbols-outlined text-primary mt-0.5">dashboard</span>
+                            <div>
+                                <p class="font-bold text-primary">Read-Only Aggregated Dashboard</p>
+                                <p class="text-sm text-on-surface-variant">Regional malnutrition rates, SAM/MAM case counts, and vaccination coverage across all PHM areas in the division.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
+                            <span class="material-symbols-outlined text-primary mt-0.5">verified_user</span>
+                            <div>
+                                <p class="font-bold text-primary">Cryptographic Audit Trail</p>
+                                <p class="text-sm text-on-surface-variant">Immutable, append-only log of all data entry, modification, and synchronization events. Full NDHGS and Personal Data Protection Act compliance.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
+                            <span class="material-symbols-outlined text-primary mt-0.5">hub</span>
+                            <div>
+                                <p class="font-bold text-primary">eRHMIS-Ready Architecture</p>
+                                <p class="text-sm text-on-surface-variant">All atomic events are divisionally tagged now. Future phase: full eRHMIS export and automated Quarterly MCH/EPI returns without schema changes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-8 bg-surface-container-lowest rounded-[2rem] border border-outline-variant/10 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <p class="font-bold text-primary">Deraniyagala Division — Today</p>
+                        <span class="px-2 py-0.5 rounded-full bg-secondary-container/30 text-secondary text-xs font-bold">Live</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-surface-container-low rounded-xl">
+                            <p class="text-3xl font-display font-bold text-primary">34</p>
+                            <p class="text-xs text-on-surface-variant mt-1">Infants seen today</p>
+                        </div>
+                        <div class="p-4 bg-surface-container-low rounded-xl">
+                            <p class="text-3xl font-display font-bold text-error">3</p>
+                            <p class="text-xs text-on-surface-variant mt-1">Active SAM/MAM alerts</p>
+                        </div>
+                        <div class="p-4 bg-surface-container-low rounded-xl">
+                            <p class="text-3xl font-display font-bold text-primary">91%</p>
+                            <p class="text-xs text-on-surface-variant mt-1">Vaccination coverage</p>
+                        </div>
+                        <div class="p-4 bg-surface-container-low rounded-xl">
+                            <p class="text-3xl font-display font-bold text-primary">7</p>
+                            <p class="text-xs text-on-surface-variant mt-1">Defaulter follow-ups logged</p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                        <p class="text-xs text-on-surface-variant">H 523 generation complete for <strong>4 of 6 PHMs</strong> in division. Audit trail up to date.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- AI CHATBOT -->
+    <!-- ============================================================ -->
+    <section class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="bg-primary text-on-primary rounded-[2.5rem] p-8 md:p-16 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary-container to-transparent opacity-50"></div>
+            <div class="relative z-10 grid md:grid-cols-12 gap-12 items-center">
+                <div class="md:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white text-label-md font-semibold backdrop-blur-sm">
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        Dual-Role AI Chatbot — Powered by Google Gemini
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-display font-bold">Grounded in Sri Lankan Clinical Protocols. Not the Internet.</h2>
+                    <p class="text-xl text-on-primary-container leading-relaxed">
+                        BlueCradle's chatbot uses <strong>Retrieval-Augmented Generation (RAG)</strong> — every response is grounded in FHB guidelines, WHO Child Growth Standards, and the National Immunization Schedule. PHMs get a clinical assistant in English. Parents get a health literacy assistant in Sinhala or Tamil.
+                    </p>
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-secondary-container">local_hospital</span>
+                            <span class="text-sm opacity-90"><strong>PHM:</strong> "What is the contraindication for Pentavalent in an infant with prior anaphylaxis?" → Clinical answer from FHB protocols.</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-secondary-container">family_restroom</span>
+                            <span class="text-sm opacity-90"><strong>Parent (Sinhala):</strong> "මගේ දරුවාට වඩා හොඳ ආහාර ලබා දෙන්නේ කෙසේද?" → Plain-language dietary advice.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-5">
+                    <div class="bg-surface-container-lowest/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 space-y-4">
+                        <p class="text-label-md font-bold">RAG Knowledge Base</p>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg text-xs">
+                                <span class="material-symbols-outlined text-sm text-secondary-container">description</span>
+                                FHB Clinical Guidelines &amp; Manuals
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg text-xs">
+                                <span class="material-symbols-outlined text-sm text-secondary-container">description</span>
+                                WHO Child Growth Standards
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg text-xs">
+                                <span class="material-symbols-outlined text-sm text-secondary-container">description</span>
+                                National Immunization Schedule
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg text-xs">
+                                <span class="material-symbols-outlined text-sm text-secondary-container">description</span>
+                                NDHGS &amp; CHDR Parts A &amp; B
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg text-xs">
+                                <span class="material-symbols-outlined text-sm text-secondary-container">description</span>
+                                FHB MCH Education Materials (Sinhala/Tamil)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Standards -->
+    <section class="bg-surface-container-low py-24 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 space-y-4">
+                <h2 class="text-3xl md:text-4xl font-display font-bold text-primary">Built to Sri Lanka's Clinical and Digital Standards</h2>
+                <p class="text-on-surface-variant max-w-2xl mx-auto">Every technical decision maps back to a regulatory or operational requirement identified through stakeholder interviews across six divisions.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-8 bg-surface-container-lowest rounded-2xl shadow-sm space-y-4">
+                    <span class="material-symbols-outlined text-secondary text-4xl">lock</span>
+                    <h3 class="text-xl font-bold text-primary">NDHGS &amp; Data Protection Compliant</h3>
+                    <p class="text-on-surface-variant leading-relaxed">TLS 1.3 in transit, AES encryption at rest, and a cryptographic audit trail conforming to the National Digital Health Guidelines and Standards and Sri Lanka's Personal Data Protection Act.</p>
+                </div>
+                <div class="p-8 bg-surface-container-lowest rounded-2xl shadow-sm space-y-4">
+                    <span class="material-symbols-outlined text-secondary text-4xl">devices</span>
+                    <h3 class="text-xl font-bold text-primary">Progressive Web App — No Install Required</h3>
+                    <p class="text-on-surface-variant leading-relaxed">Runs on any modern browser — Android smartphone, tablet, or desktop. No app store. No device-specific builds. The Service Worker caches the full app shell for zero-latency loading at the start of every clinic session.</p>
+                </div>
+                <div class="p-8 bg-surface-container-lowest rounded-2xl shadow-sm space-y-4">
+                    <span class="material-symbols-outlined text-secondary text-4xl">schema</span>
+                    <h3 class="text-xl font-bold text-primary">eRHMIS-Ready Event Architecture</h3>
+                    <p class="text-on-surface-variant leading-relaxed">All clinical data is stored as atomic events tagged with FHB service codes and divisional identifiers. The schema is designed to feed eRHMIS without re-engineering — future aggregation is a query, not a migration.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 px-6 bg-surface-container-low">
+        <div class="max-w-4xl mx-auto text-center space-y-8">
+            <h2 class="text-4xl md:text-5xl font-display font-extrabold text-primary">Who are you signing in as?</h2>
+            <p class="text-xl text-on-surface-variant">BlueCradle serves three distinct roles. Choose yours to get started.</p>
+            <div class="grid sm:grid-cols-3 gap-4 pt-4">
+                <a href="#" class="bg-primary hover:bg-primary/90 text-on-primary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
+                    <span class="material-symbols-outlined text-3xl">stethoscope</span>
+                    I am a PHM
+                    <span class="text-xs font-normal opacity-75">Clinical dashboard access</span>
+                </a>
+                <a href="#" class="bg-secondary hover:bg-secondary/90 text-on-secondary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
+                    <span class="material-symbols-outlined text-3xl">family_restroom</span>
+                    I am a Parent
+                    <span class="text-xs font-normal opacity-75">Child health portal access</span>
+                </a>
+                <a href="#" class="bg-tertiary hover:bg-tertiary/90 text-on-tertiary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
+                    <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
+                    I am a MOH Officer
+                    <span class="text-xs font-normal opacity-75">Divisional oversight access</span>
+                </a>
+            </div>
+            <p class="text-sm text-on-surface-variant pt-2">
+                New parent? <a href="#" class="text-secondary font-semibold hover:underline">Register</a> here
+            </p>
+        </div>
+    </section>
+</main>
+{% endblock %}
