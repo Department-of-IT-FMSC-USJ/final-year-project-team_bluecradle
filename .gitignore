@@ -1,0 +1,33 @@
+# Python bytecode files
+*.pyc
+__pycache__/
+
+# Python virtual environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Local database files
+*.db
+*.sqlite3
+db.sqlite3
+
+# Secret/Local settings
+local_settings.py
+.env
+
+# Logs and translation files
+logs/
+*.log
+*.pot
+
+# Media files
+media/
+
+# OS-generated files
+Thumbs.db
+
+# IDE-specific files
+.vscode/
