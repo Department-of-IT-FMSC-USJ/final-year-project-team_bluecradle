@@ -1,0 +1,210 @@
+{% extends 'core_module/base.html' %}  
+
+{% block content %}
+        <main class="flex-grow">
+            <!-- Hero Section -->
+            <section class="relative w-full overflow-hidden bg-surface pb-16 pt-36 md:pt-30 md:pb-24">
+                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="z-10 flex flex-col items-start space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container/30 text-secondary border border-secondary/20">
+                            <span class="material-symbols-outlined text-sm">verified</span>
+                            <span class="text-sm font-label font-medium tracking-wide">Public Health Excellence</span>
+                        </div>
+                        <h1 class="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-primary leading-tight tracking-tight">
+                            Empowering Sri Lanka's Public Health Excellence.
+                        </h1>
+                        <p class="text-lg md:text-xl text-on-surface-variant font-body leading-relaxed max-w-xl">
+                            A secure, offline-first health management system dedicated to every infant's journey. Bridging the gap between Public Health Midwives and families.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
+                            <button class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                                Register
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                            <button class="border-2 border-primary text-primary hover:bg-primary hover:text-on-primary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                                Sign In
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative z-10 w-full h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,36,68,0.15)] border-4 border-surface-container-lowest">
+                        <img alt="Healthcare worker smiling" class="w-full h-full object-cover object-top" data-alt="A professional Sri Lankan female healthcare worker, a Public Health Midwife, smiling warmly while examining a happy infant in a brightly lit, clean, modern clinical setting. The lighting is soft and natural, emphasizing a high-fidelity 'Clinical Precision' aesthetic. The color palette features crisp whites, deep navy blues, and subtle teal accents, conveying trust and medical excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5AJiJ0H4MjTvm3h6a-YEWbnS14Qdkpk6GfDPh5gvKkyZfsVA61kgjPBan74HK6ty3QGRc3etKA8TELg1pKf8SiSrwsrWYj1XN4UTmJjsNYT1xevlvGyKPvOPrB0zxN83LddBlIDyItEXYp3y-j5aBO_PKMTOAHGtKb6DHC8fdTPgkFCID5RFvX23ULpXauok0iZNsdf5cLby0bl0Z5H3hX4v--IjnlYAHj9Pei2flVg7Zm-MORIABPhwbmcNDy7U5OxqIkVauDLK9"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
+                        <!-- Floating Stat Card -->
+                        <div class="absolute bottom-6 left-6 bg-surface-container-lowest/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-outline-variant/20 flex items-center gap-4">
+                            <div class="bg-secondary-container text-on-secondary-container w-12 h-12 rounded-full flex items-center justify-center">
+                                <span class="material-symbols-outlined">health_and_safety</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-label text-on-surface-variant">Active Records</p>
+                                <p class="text-xl font-headline font-bold text-primary">12,450+</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Subtle background decorative elements -->
+                <div class="absolute top-0 right-0 -mr-[20%] -mt-[10%] w-[60%] h-[80%] bg-primary-fixed/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 -ml-[10%] -mb-[10%] w-[40%] h-[60%] bg-secondary-container/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            </section>
+            <!-- Features Section (Bento Grid) -->
+            <section class="py-20 px-6 bg-surface-container-low relative">
+                <div class="max-w-7xl mx-auto">
+                    <div class="text-center mb-16 max-w-2xl mx-auto">
+                        <h2 class="text-3xl md:text-4xl font-display font-bold text-primary mb-4">Precision Tools for Critical Care</h2>
+                        <p class="text-on-surface-variant font-body">Engineered for the realities of field work, ensuring no data is lost and every child is monitored.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(250px,auto)]">
+                        <!-- Feature 1: Offline First (Spans 2 cols on md) -->
+                        <div class="md:col-span-2 bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/20 flex flex-col justify-between group hover:shadow-md transition-shadow relative overflow-hidden">
+                            <div class="relative z-10">
+                                <div class="w-14 h-14 bg-primary-container text-on-primary flex items-center justify-center rounded-2xl mb-6 shadow-inner">
+                                    <span class="material-symbols-outlined fill text-2xl">wifi_off</span>
+                                </div>
+                                <h3 class="text-2xl font-headline font-bold text-primary mb-3">Offline-First Data</h3>
+                                <p class="text-on-surface-variant font-body max-w-md">Reliable record-keeping even in remote areas. Data syncs automatically and securely when a connection is re-established, ensuring continuous care without interruption.</p>
+                            </div>
+                            <!-- Decorative Abstract UI -->
+                            <div class="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-symbols-outlined text-[200px]">database</span>
+                            </div>
+                        </div>
+                        <!-- Feature 2: Growth -->
+                        <div class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/20 flex flex-col justify-between group hover:shadow-md transition-shadow">
+                            <div>
+                                <div class="w-14 h-14 bg-secondary-container text-on-secondary-container flex items-center justify-center rounded-2xl mb-6">
+                                    <span class="material-symbols-outlined text-2xl">monitoring</span>
+                                </div>
+                                <h3 class="text-xl font-headline font-bold text-primary mb-3">Growth &amp; Nutrition</h3>
+                                <p class="text-on-surface-variant font-body text-sm">WHO-standard monitoring with AI-assisted risk detection for early intervention.</p>
+                            </div>
+                        </div>
+                        <!-- Feature 3: Vaccination (Spans full width or remaining cols) -->
+                        <div class="md:col-span-3 bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-outline-variant/20 flex flex-col md:flex-row items-center gap-8 group hover:shadow-md transition-shadow">
+                            <div class="flex-1">
+                                <div class="w-14 h-14 bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center rounded-2xl mb-6">
+                                    <span class="material-symbols-outlined text-2xl">vaccines</span>
+                                </div>
+                                <h3 class="text-2xl font-headline font-bold text-primary mb-3">Vaccination Tracking</h3>
+                                <p class="text-on-surface-variant font-body max-w-xl">Automated schedules, instant logging, and SMS reminders for parents. Keep track of community immunity levels with district-wide dashboard overviews.</p>
+                            </div>
+                            <div class="w-full md:w-1/3 h-48 bg-surface-container-low rounded-2xl border border-outline-variant/30 flex items-center justify-center relative overflow-hidden">
+                                <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-surface-container-high to-transparent"></div>
+                                <!-- Mock UI element inside card -->
+                                <div class="bg-surface-container-lowest w-4/5 h-3/4 rounded-xl shadow-sm flex flex-col p-3 gap-2 z-10 border border-outline-variant/10">
+                                    <div class="h-4 w-1/2 bg-surface-variant rounded"></div>
+                                    <div class="flex items-center justify-between mt-2">
+                                        <div class="flex gap-2">
+                                            <div class="h-8 w-8 rounded-full bg-secondary-container flex items-center justify-center"><span class="material-symbols-outlined text-[16px] text-on-secondary-container">check</span></div>
+                                            <div class="flex flex-col gap-1 justify-center">
+                                                <div class="h-2 w-16 bg-surface-variant rounded"></div>
+                                                <div class="h-2 w-10 bg-surface-variant rounded"></div>
+                                            </div>
+                                        </div>
+                                        <div class="h-6 w-16 bg-primary-fixed rounded-full"></div>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-1">
+                                        <div class="flex gap-2">
+                                            <div class="h-8 w-8 rounded-full bg-surface-variant flex items-center justify-center"><span class="material-symbols-outlined text-[16px] text-outline">schedule</span></div>
+                                            <div class="flex flex-col gap-1 justify-center">
+                                                <div class="h-2 w-20 bg-surface-variant rounded"></div>
+                                                <div class="h-2 w-12 bg-surface-variant rounded"></div>
+                                            </div>
+                                        </div>
+                                        <div class="h-6 w-16 bg-surface-variant rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- User Segments Section -->
+            <section class="py-24 px-6 bg-surface">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    <!-- For PHMs -->
+                    <div class="relative bg-gradient-to-br from-primary to-primary-container rounded-[2rem] p-10 md:p-12 text-on-primary overflow-hidden shadow-lg">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-primary-fixed/10 rounded-full blur-3xl"></div>
+                        <div class="relative z-10">
+                            <div class="inline-flex items-center gap-2 bg-on-primary/10 px-4 py-2 rounded-full mb-8 backdrop-blur-sm border border-on-primary/10">
+                                <span class="material-symbols-outlined text-sm">medical_services</span>
+                                <span class="text-sm font-label font-medium tracking-wide">For PHMs</span>
+                            </div>
+                            <h3 class="text-3xl md:text-4xl font-display font-bold mb-6">Clinical Precision &amp; Automated Reporting</h3>
+                            <p class="text-on-primary/80 font-body text-lg leading-relaxed mb-8">
+                                Ditch the paperwork. BlueCradle provides a streamlined interface for entering clinical data, tracking high-risk pregnancies, and generating monthly district reports with a single tap.
+                            </p>
+                            <ul class="space-y-4 font-body">
+                                <li class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-secondary-fixed">check_circle</span>
+                                    <span>Digital Family Folders</span>
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-secondary-fixed">check_circle</span>
+                                    <span>Automated Triage Alerts</span>
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-secondary-fixed">check_circle</span>
+                                    <span>Batch Sync to MOH Server</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- For Parents -->
+                    <div class="relative bg-surface-container-lowest rounded-[2rem] p-10 md:p-12 text-on-surface border border-outline-variant/30 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+                        <div class="absolute bottom-0 right-0 w-64 h-64 bg-secondary-container/20 rounded-full blur-3xl"></div>
+                        <div class="relative z-10">
+                            <div class="inline-flex items-center gap-2 bg-surface-container px-4 py-2 rounded-full mb-8 border border-outline-variant/20">
+                                <span class="material-symbols-outlined text-sm text-primary">family_restroom</span>
+                                <span class="text-sm font-label font-medium tracking-wide text-primary">For Parents</span>
+                            </div>
+                            <h3 class="text-3xl md:text-4xl font-display font-bold text-primary mb-6">Your Child's Digital CHDR</h3>
+                            <p class="text-on-surface-variant font-body text-lg leading-relaxed mb-8">
+                                Empower yourself with knowledge. Access your child's Child Health Development Record directly from your phone. Receive timely vaccination reminders and certified health tips.
+                            </p>
+                            <ul class="space-y-4 font-body text-on-surface-variant">
+                                <li class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-secondary">check_circle</span>
+                                    <span>Interactive Growth Charts</span>
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-secondary">check_circle</span>
+                                    <span>Upcoming Clinic Reminders</span>
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-secondary">check_circle</span>
+                                    <span>Verified Nutrition Advice</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Call to Action Section -->
+            <section class="py-24 px-6 relative bg-surface-container-lowest border-t border-outline-variant/10">
+                <div class="max-w-4xl mx-auto text-center relative z-10">
+                    <span class="material-symbols-outlined text-5xl text-primary mb-6">assured_workload</span>
+                    <h2 class="text-4xl md:text-5xl font-display font-extrabold text-primary mb-6">Join the BlueCradle Initiative</h2>
+                    <p class="text-xl text-on-surface-variant font-body mb-10 max-w-2xl mx-auto">
+                        Together, we are building a healthier future for Sri Lanka, one secure record at a time.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="#">
+                            <button class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-10 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                                Register
+                            </button>
+                        </a>
+                        <button class="bg-surface-container hover:bg-surface-container-high text-primary font-headline font-semibold text-lg py-4 px-10 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                            Sign In
+                            <span class="material-symbols-outlined">login</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            <!-- Decorative gradient mesh -->
+            <section class="py-24 px-6 relative bg-surface-container-lowest border-t border-outline-variant/10">
+                <div class="absolute inset-0 z-0 opacity-40">
+                    <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-primary-fixed/40 rounded-full mix-blend-multiply filter blur-3xl transform -translate-y-1/2"></div>
+                    <div class="absolute top-1/2 right-1/4 w-96 h-96 bg-secondary-container/30 rounded-full mix-blend-multiply filter blur-3xl transform -translate-y-1/2"></div>
+                </div>
+            </section>
+        </main>
+{% endblock %}
