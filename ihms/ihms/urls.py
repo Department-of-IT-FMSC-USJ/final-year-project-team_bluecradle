@@ -21,3 +21,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core_module.urls', namespace='core')),
 ]
+
+# Fallback pages
+handler404 = 'core_module.views.error_404'
+handler500 = 'core_module.views.error_500'
+handler403 = 'core_module.views.error_403'
+handler400 = 'core_module.views.error_400'
