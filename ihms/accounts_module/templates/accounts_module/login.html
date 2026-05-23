@@ -18,15 +18,23 @@
         <p class="text-on-surface-variant">Sign in to access the health management portal</p>
     </div>
 
-    <!-- Django Messages -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
-                <span class="material-symbols-outlined text-[18px]">error</span>
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+   <!-- Message Handling -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="mb-6 p-4 rounded-xl 
+            {% if 'success' in message.tags %}
+                bg-secondary-container/30 border border-secondary/20 text-secondary
+            {% else %}
+                bg-error-container/30 border border-error/20 text-error
+            {% endif %}
+            text-sm font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">
+                {% if 'success' in message.tags %}check_circle{% else %}error{% endif %}
+            </span>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 
     <form class="space-y-6" method="POST" action="{% url 'user:user_login' %}">
         {% csrf_token %}
