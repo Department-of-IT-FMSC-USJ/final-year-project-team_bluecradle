@@ -81,65 +81,6 @@
                 },
             }
         </script>
-        <style>
-            .material-symbols-outlined {
-                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            }
-            .material-symbols-outlined.fill {
-                font-variation-settings: 'FILL' 1;
-            }
-            body {
-                background-color: theme('colors.background');
-                color: theme('colors.on-surface');
-                font-family: theme('fontFamily.body');
-            }
-            h1, h2, h3, h4, h5, h6 {
-                font-family: theme('fontFamily.headline');
-            }
-            .glass-nav {
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-            }
-            .clinical-gradient {
-                background: linear-gradient(135deg, #002444 0%, #1A3A5C 100%);
-            }
-        </style>
-    </head>
-    <body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
-        <!--Header-->
-        {% include 'core_module/header.html' %}
-    
-        <!--Content-->
-        {% block content %}
+        {% block head_and_body %}
         {% endblock %}
-    
-        <!--Footer-->
-        {% include 'core_module/footer.html' %}
-    
-        <script>
-            // Micro-interaction: Scroll reveal for navbar
-            let lastScroll = 0;
-            window.addEventListener('scroll', () => {
-                const nav = document.querySelector('nav');
-                const currentScroll = window.pageYOffset;
-                
-                if (currentScroll <= 0) {
-                    nav.classList.remove('-translate-y-full');
-                    return;
-                }
-                
-                if (currentScroll > lastScroll && !nav.classList.contains('-translate-y-full')) {
-                    // Scroll Down
-                    nav.classList.add('-translate-y-full');
-                } else if (currentScroll < lastScroll && nav.classList.contains('-translate-y-full')) {
-                    // Scroll Up
-                    nav.classList.remove('-translate-y-full');
-                }
-                lastScroll = currentScroll;
-            });
-        
-            // Add CSS transition to nav for smooth hiding
-            document.querySelector('nav').style.transition = 'transform 0.3s ease-in-out';
-        </script>
-    </body>
 </html>

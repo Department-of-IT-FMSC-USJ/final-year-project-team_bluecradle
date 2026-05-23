@@ -8,8 +8,8 @@
         <div class="flex items-center gap-4">
             <a class="text-on-surface-variant dark:text-on-surface-variant/70 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors py-2 px-3 hover:bg-surface-container-high/50 dark:hover:bg-surface-container-high/20 rounded-lg transition-all active:scale-95 duration-150" href="{% url 'core:home' %}">Home</a>
             <a class="text-on-surface-variant dark:text-on-surface-variant/70 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors py-2 px-3 hover:bg-surface-container-high/50 dark:hover:bg-surface-container-high/20 rounded-lg transition-all active:scale-95 duration-150" href="{% url 'core:features' %}">Features</a>
-            <a class="hidden sm:inline-block text-primary font-semibold hover:text-primary-container transition-colors py-2 px-4 rounded-xl hover:bg-primary-fixed/20" href="#">Sign In</a>
-            <a class="bg-primary hover:bg-primary-container text-on-primary font-semibold py-2.5 px-6 rounded-xl transition-all shadow-sm hover:shadow active:scale-95" href="#">Register</a>
+            <a class="hidden sm:inline-block text-primary font-semibold hover:text-primary-container transition-colors py-2 px-4 rounded-xl hover:bg-primary-fixed/20" href="{% url 'user:user_login' %}">Sign In</a>
+            <a class="bg-primary hover:bg-primary-container text-on-primary font-semibold py-2.5 px-6 rounded-xl transition-all shadow-sm hover:shadow active:scale-95" href="{% url 'user:register' %}">Register</a>
         </div>
     </div>
 </nav>
