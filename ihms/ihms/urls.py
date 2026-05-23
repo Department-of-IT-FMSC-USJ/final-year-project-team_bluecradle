@@ -20,6 +20,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core_module.urls', namespace='core')),
+    path('user/', include('accounts_module.urls', namespace='user')),
 ]
 
 # Fallback pages
