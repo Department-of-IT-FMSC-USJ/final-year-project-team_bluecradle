@@ -1,0 +1,91 @@
+{% extends 'core_module/base.html' %}
+
+{% block head_and_body %}
+  <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<div class="flex min-h-screen flex-col md:flex-row overflow-hidden">
+<!-- Left Panel: Brand & Features -->
+<div class="hidden md:flex md:w-[42%] lg:w-[35%] bg-primary-container p-12 flex-col justify-between relative overflow-hidden">
+<!-- Background Decorative Texture -->
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-on-primary-container blur-[100px]"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-secondary-container blur-[100px]"></div>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-12">
+<div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-3xl shadow-lg">
+                        🍼
+                    </div>
+<div>
+<h1 class="text-white text-3xl font-extrabold tracking-tight leading-none">BlueCradle</h1>
+<p class="text-on-primary-container text-sm font-medium mt-1">Health &amp; Wellbeing</p>
+</div>
+</div>
+<h2 class="text-white text-4xl font-bold leading-tight mb-6">
+                    Infant &amp; Child Health Field Management System
+                </h2>
+<p class="text-on-primary-container text-lg mb-12 max-w-sm">
+                    Empowering frontline health workers with digital precision for every newborn's journey.
+                </p>
+<!-- Feature Highlights -->
+<div class="space-y-8">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined" data-icon="cloud_off">cloud_off</span>
+</div>
+<div>
+<h3 class="text-white font-semibold text-lg">Offline-First Field Management</h3>
+<p class="text-on-primary-container/80 text-sm">Seamless data capture even in remote areas without connectivity.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+</div>
+<div>
+<h3 class="text-white font-semibold text-lg">WHO Growth Monitoring</h3>
+<p class="text-on-primary-container/80 text-sm">Automated z-score calculation and digital growth curve plotting.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined" data-icon="vaccines">vaccines</span>
+</div>
+<div>
+<h3 class="text-white font-semibold text-lg">Vaccination Tracking</h3>
+<p class="text-on-primary-container/80 text-sm">Smart scheduling and missed-dose alerts for clinical accuracy.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+</div>
+<div>
+<h3 class="text-white font-semibold text-lg">AI-Powered Risk Detection</h3>
+<p class="text-on-primary-container/80 text-sm">Early identification of SAM and MAM risks using predictive data.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative z-10 pt-12">
+<p class="text-on-primary-container text-xs opacity-60">© 2024 BlueCradle Digital Health Initiative. Sri Lanka.</p>
+</div>
+</div>
+  {% block body_content %}
+  {% endblock %}
+</body>
+{% endblock %}

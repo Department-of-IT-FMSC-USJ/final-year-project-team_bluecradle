@@ -1,0 +1,109 @@
+{% extends 'accounts_module/sub_base.html' %}
+
+{% block body_content %}
+<!-- Right Panel: Session Role Selection -->
+<main class="flex-1 flex items-center justify-center p-6 bg-white">
+<div class="w-full max-w-md">
+    <!-- Mobile Logo -->
+    <div class="md:hidden flex flex-col items-center mb-10">
+        <div class="w-16 h-16 bg-primary-container rounded-2xl flex items-center justify-center text-4xl shadow-xl mb-4">
+            🍼
+        </div>
+        <h1 class="text-primary text-3xl font-extrabold tracking-tight">BlueCradle</h1>
+    </div>
+
+    <div class="mb-10 text-center md:text-left">
+        <h2 class="text-on-surface text-3xl font-extrabold mb-2">Welcome Back</h2>
+        <p class="text-on-surface-variant">Your account has multiple roles. Select how you would like to sign in today.</p>
+    </div>
+
+    <form method="POST" id="role-form" action="{% url 'user:user_login' %}">
+        {% csrf_token %}
+        <input type="hidden" id="role-input" name="role" value="">
+
+        <div class="space-y-4 mb-8">
+
+            {% if 'PHM' in roles %}
+            <div id="card-PHM" class="role-card p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col" onclick="selectRole('PHM')">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-3xl">medical_services</span>
+                    </div>
+                    <div>
+                        <h3 class="text-primary font-extrabold text-lg">Public Health Midwife</h3>
+                        <p class="text-on-surface-variant text-sm mt-1 leading-relaxed">Access clinical dashboard, growth monitoring, and field session management.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if 'PARENT' in roles %}
+            <div id="card-PARENT" class="role-card p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col" onclick="selectRole('PARENT')">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-3xl">family_restroom</span>
+                    </div>
+                    <div>
+                        <h3 class="text-primary font-extrabold text-lg">Parent / Guardian</h3>
+                        <p class="text-on-surface-variant text-sm mt-1 leading-relaxed">View your child's health record and manage vaccination reminders.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if 'MOH' in roles %}
+            <div id="card-MOH" class="role-card p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col" onclick="selectRole('MOH')">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
+                        <span class="material-symbols-outlined text-3xl">health_and_safety</span>
+                    </div>
+                    <div>
+                        <h3 class="text-on-surface font-extrabold text-lg">Medical Officer of Health</h3>
+                        <p class="text-on-surface-variant text-sm mt-1 leading-relaxed">Monitor divisional health indicators and access the audit trail.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <button type="submit" id="btn-continue"
+                class="w-full bg-primary text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-2"
+                onclick="return submitRole()">
+                Continue
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+
+        </div>
+    </form>
+
+    <div class="mt-8 text-center">
+        <p class="text-sm text-on-surface-variant">
+            Not you?
+            <a class="font-bold text-primary hover:underline" href="{% url 'user:user_logout' %}">Sign out</a>
+        </p>
+    </div>
+</div>
+</main>
+
+<script>
+    const selectedClass = "p-6 rounded-2xl border-2 border-primary bg-primary-fixed/10 hover:shadow-md transition-all cursor-pointer group flex flex-col";
+    const unselectedClass = "p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col";
+
+    function selectRole(role) {
+        document.getElementById('role-input').value = role;
+        ['PHM', 'PARENT', 'MOH'].forEach((r) => {
+            const card = document.getElementById('card-' + r);
+            if (!card) return;  // skip roles not rendered for this user
+            card.className = r === role ? selectedClass : unselectedClass;
+        });
+    }
+
+    function submitRole() {
+        const selectedRole = document.getElementById('role-input').value;
+        if (!selectedRole) {
+            alert('Please select a role to continue.');
+            return false;
+        }
+        return true;
+    }
+</script>
+{% endblock %}
