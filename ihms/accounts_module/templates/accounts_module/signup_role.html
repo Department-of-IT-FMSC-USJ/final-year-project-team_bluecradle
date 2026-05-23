@@ -1,0 +1,106 @@
+{% extends 'accounts_module/sub_base.html' %}
+
+{% block body_content %}
+<!-- Right Panel: Login Form -->
+<main class="flex-1 flex items-center justify-center p-6 bg-white">
+<div class="w-full max-w-md">
+<!-- Mobile Logo (Visible only on small screens) -->
+<div class="md:hidden flex flex-col items-center mb-10">
+<div class="w-16 h-16 bg-primary-container rounded-2xl flex items-center justify-center text-4xl shadow-xl mb-4">
+                        🍼
+                    </div>
+<h1 class="text-primary text-3xl font-extrabold tracking-tight">BlueCradle</h1>
+</div>
+<div class="mb-10 text-center md:text-left">
+<h2 class="text-on-surface text-3xl font-extrabold mb-2">Choose Your Role</h2>
+<p class="text-on-surface-variant">Select how you will be using BlueCradle to continue your registration.</p>
+</div>
+<form method="POST" id="role-form" action="{% url 'user:register' %}">
+{% csrf_token %}
+<!-- Hidden role input -->
+<input type="hidden" id="role-input" name="role" value="">
+
+<!-- Role Selector -->
+<div class="space-y-4 mb-8">
+<!-- Card 1: Midwife -->
+<div id="card-PHM" class="role-card p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col" onclick="selectRole('PHM')">
+<div class="flex items-start gap-4 mb-4">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-3xl fill-icon">medical_services</span>
+</div>
+<div>
+<h3 class="text-primary font-extrabold text-lg">Public Health Midwife</h3>
+<p class="text-on-surface-variant text-sm mt-1 leading-relaxed">Manage clinical records, growth monitoring, and district health data.</p>
+</div>
+</div>
+</div>
+<!-- Card 2: Parent -->
+<div id="card-PARENT" class="role-card p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col" onclick="selectRole('PARENT')">
+<div class="flex items-start gap-4 mb-4">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-3xl fill-icon">family_restroom</span>
+</div>
+<div>
+<h3 class="text-primary font-extrabold text-lg">Parent / Guardian</h3>
+<p class="text-on-surface-variant text-sm mt-1 leading-relaxed">Access your child's digital health record and receive vaccination alerts.</p> 
+</div>
+</div>
+</div>
+<!-- Card 3: MOH -->
+<div id="card-MOH" class="role-card p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col" onclick="selectRole('MOH')">
+<div class="flex items-start gap-4 mb-4">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined text-3xl">health_and_safety</span>
+</div>
+<div>
+<h3 class="text-on-surface font-extrabold text-lg">Medical Officer of Health</h3>
+<p class="text-on-surface-variant text-sm mt-1 leading-relaxed">Monitor public health indicators and manage district-level health programs.</p>
+</div>
+</div>
+</div>
+<!-- Continue Button -->
+<button type="submit" id="btn-continue" class="w-full bg-primary text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-2" onclick="submitRole()">
+      Continue
+      <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Footer Note -->
+<!-- Support link -->
+<div class="mt-8 text-center"><p class="text-sm text-on-surface-variant">
+    Already have an account? 
+    <a class="font-bold text-primary hover:underline" href="{% url 'user:user_login' %}">Sign In</a>
+</p></div>
+</div>
+</main>
+</div>
+<script>
+      const selectedClass = "p-6 rounded-2xl border-2 border-primary bg-primary-fixed/10 hover:shadow-md transition-all cursor-pointer group flex flex-col";
+      const unselectedClass = "p-6 rounded-2xl border border-outline-variant hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col";
+
+      function selectRole(role) {
+        // Update hidden input
+        document.getElementById('role-input').value = role;
+
+        // Update all card styles
+        ['PHM', 'PARENT', 'MOH'].forEach((r) => {
+          const card = document.getElementById('card-' + r);
+          if (r === role) {
+            card.className = selectedClass;
+          } else {
+            card.className = unselectedClass;
+          }
+        });
+      }
+
+      function submitRole() {
+        const selectedRole = document.getElementById('role-input').value;
+        if (!selectedRole) {
+          alert('Please select a role to continue');
+          return false;
+        }
+        // Form will submit automatically
+        return true;
+      }
+    </script>
+{% endblock %}

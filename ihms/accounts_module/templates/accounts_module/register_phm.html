@@ -1,0 +1,169 @@
+{% extends 'accounts_module/sub_base.html' %}
+
+{% block body_content %}
+<!-- Right Side: Signup Form -->
+<main class="flex-1 overflow-y-auto bg-surface-container-low px-6 py-12 lg:px-20 lg:py-24">
+<div class="max-w-2xl mx-auto">
+<header class="mb-12">
+<div class="lg:hidden flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">child_care</span>
+<h1 class="text-2xl font-headline font-extrabold text-primary">BlueCradle</h1>
+</div>
+<h2 class="text-3xl font-headline font-bold text-on-background">Midwife Onboarding</h2>
+<p class="text-on-surface-variant mt-2">Create your professional account to begin clinical session management.</p>
+</header>
+<form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
+{% csrf_token %}
+<!-- Message Handling -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="mb-6 p-4 rounded-xl 
+            {% if message.tags == 'success' %}
+                bg-secondary-container/30 border border-secondary/20 text-secondary
+            {% else %}
+                bg-error-container/30 border border-error/20 text-error
+            {% endif %}
+            text-sm font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">
+                {% if message.tags == 'success' %}check_circle{% else %}error{% endif %}
+            </span>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+<!-- Section 1: Personal Information -->
+<section>
+<div class="flex items-center gap-3 mb-6">
+<span class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-sm">1</span>
+<h3 class="text-lg font-headline font-bold text-primary">Personal Information</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1">
+    <label class="block text-sm font-semibold text-on-surface-variant ml-1">
+        Full Name
+    </label>
+    {{ form.full_name }}
+    {% if form.full_name.errors %}
+        <p class="text-error text-xs ml-1">{{ form.full_name.errors.0 }}</p>
+    {% endif %}
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">SLMC Registration Number</label>
+{{ form.registration_number }}
+{% if form.registration_number.errors %}
+    <p class="text-error text-xs ml-1">{{ form.registration_number.errors.0 }}</p>
+{% endif %}
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">MOH Division</label>
+{{ form.moh_division }}
+{% if form.moh_division.errors %}
+    <p class="text-error text-xs ml-1">{{ form.moh_division.errors.0 }}</p>
+{% endif %}
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">Operational Area</label>
+{{ form.operational_area }}
+{% if form.operational_area.errors %}
+    <p class="text-error text-xs ml-1">{{ form.operational_area.errors.0 }}</p>
+{% endif %}
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">Email Address</label>
+{{ form.email }}
+{% if form.email.errors %}
+    <p class="text-error text-xs ml-1">{{ form.email.errors.0 }}</p>
+{% endif %}
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">Contact Number</label>
+<div class="relative">
+{{ form.contact_no }}
+{% if form.contact_no.errors %}
+    <p class="text-error text-xs ml-1">{{ form.contact_no.errors.0 }}</p>
+{% endif %}
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Login Credentials -->
+<section>
+<div class="flex items-center gap-3 mb-6">
+<span class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-sm">2</span>
+<h3 class="text-lg font-headline font-bold text-primary">Login Credentials</h3>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl space-y-6">
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">Username</label>
+{{ form.username }}
+{% if form.username.errors %}
+    <p class="text-error text-xs ml-1">{{ form.username.errors.0 }}</p>
+{% endif %}
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">Password</label>
+<div class="relative">
+{{ form.password }}
+{% if form.password.errors %}
+    <p class="text-error text-xs ml-1">{{ form.password.errors.0 }}</p>
+{% endif %}
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary" onclick="togglePassword('id_password')" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-semibold text-on-surface-variant ml-1">Confirm Password</label>
+<div class="relative">
+{{ form.confirm_password }}
+{% if form.confirm_password.errors %}
+    <p class="text-error text-xs ml-1">{{ form.confirm_password.errors.0 }}</p>
+{% endif %}
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary" onclick="togglePassword('id_confirm_password')" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Actions -->
+<div class="pt-8 flex flex-col items-center gap-6">
+<button class="group relative w-full bg-primary text-white py-4 px-8 rounded-xl font-headline font-bold text-lg hover:bg-primary-container transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 overflow-hidden active:scale-[0.98]" type="submit">
+<span class="relative z-10">Complete Registration</span>
+<span class="material-symbols-outlined relative z-10 transition-transform group-hover:translate-x-1">arrow_forward</span>
+<!-- Subtle gradient shine -->
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full duration-1000"></div>
+</button>
+<p class="text-sm text-on-surface-variant">
+                        Already have an account? 
+                        <a class="text-primary font-bold hover:underline decoration-secondary decoration-2 underline-offset-4" href="{% url 'user:user_login' %}">Log in here</a>
+</p>
+</div>
+</form>
+</div>
+</main>
+<script>
+        // Username Auto-population Logic
+        const emailInput = document.getElementById('id_email');
+        const usernameInput = document.getElementById('id_username');
+
+        if (emailInput && usernameInput) {
+            emailInput.addEventListener('input', (e) => {
+                usernameInput.value = e.target.value;
+            });
+        }
+
+        // Toggle Password Visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            
+            // Toggle icon visual
+            const icon = event.currentTarget.querySelector('.material-symbols-outlined');
+            icon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        }
+    </script>
+{% endblock %}
