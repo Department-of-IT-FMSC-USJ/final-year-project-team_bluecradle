@@ -1,4 +1,4 @@
-{% extends 'core_module/base.html' %}
+{% extends 'core_module/sub_base.html' %}
 
 {% block content %}
 <main>
@@ -18,11 +18,11 @@
                     BlueCradle is Sri Lanka's offline-first Infant and Child Health Monitoring System — built for PHMs in the field, parents at home, and MOH officers overseeing divisions.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="#" class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
-                        PHM Registration <span class="material-symbols-outlined">arrow_forward</span>
+                    <a href="{% url 'user:register' %}" class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                        Register <span class="material-symbols-outlined">arrow_forward</span>
                     </a>
-                    <a href="#" class="bg-surface-container hover:bg-surface-container-high text-primary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
-                        Parent Portal Access
+                    <a href="{% url 'user:user_login' %}" class="bg-surface-container hover:bg-surface-container-high text-primary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                        Access Portal
                     </a>
                 </div>
             </div>
@@ -493,24 +493,24 @@
             <h2 class="text-4xl md:text-5xl font-display font-extrabold text-primary">Who are you signing in as?</h2>
             <p class="text-xl text-on-surface-variant">BlueCradle serves three distinct roles. Choose yours to get started.</p>
             <div class="grid sm:grid-cols-3 gap-4 pt-4">
-                <a href="#" class="bg-primary hover:bg-primary/90 text-on-primary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
+                <a href="{% url 'user:user_login' %}" class="bg-primary hover:bg-primary/90 text-on-primary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
                     <span class="material-symbols-outlined text-3xl">stethoscope</span>
                     I am a PHM
                     <span class="text-xs font-normal opacity-75">Clinical dashboard access</span>
                 </a>
-                <a href="#" class="bg-secondary hover:bg-secondary/90 text-on-secondary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
+                <a href="{% url 'user:user_login' %}" class="bg-secondary hover:bg-secondary/90 text-on-secondary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
                     <span class="material-symbols-outlined text-3xl">family_restroom</span>
                     I am a Parent
                     <span class="text-xs font-normal opacity-75">Child health portal access</span>
                 </a>
-                <a href="#" class="bg-tertiary hover:bg-tertiary/90 text-on-tertiary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
+                <a href="{% url 'user:user_login' %}" class="bg-tertiary hover:bg-tertiary/90 text-on-tertiary font-headline font-semibold text-base py-5 px-6 rounded-xl transition-all shadow-md active:scale-95 flex flex-col items-center gap-2">
                     <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
                     I am a MOH Officer
                     <span class="text-xs font-normal opacity-75">Divisional oversight access</span>
                 </a>
             </div>
             <p class="text-sm text-on-surface-variant pt-2">
-                New parent? <a href="#" class="text-secondary font-semibold hover:underline">Register</a> here
+                New Member? <a href="{% url 'user:register' %}" class="text-secondary font-semibold hover:underline">Register</a> here
             </p>
         </div>
     </section>

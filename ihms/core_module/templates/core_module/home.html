@@ -1,4 +1,4 @@
-{% extends 'core_module/base.html' %}  
+{% extends 'core_module/sub_base.html' %}  
 
 {% block content %}
         <main class="flex-grow">
@@ -17,13 +17,17 @@
                             A secure, offline-first health management system dedicated to every infant's journey. Bridging the gap between Public Health Midwives and families.
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
+                        <a href="{% url 'user:register' %}">
                             <button class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
                                 Register
                                 <span class="material-symbols-outlined">arrow_forward</span>
                             </button>
+                        </a>
+                        <a href="{% url 'user:user_login' %}">
                             <button class="border-2 border-primary text-primary hover:bg-primary hover:text-on-primary font-headline font-semibold text-lg py-4 px-8 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
                                 Sign In
                             </button>
+                        </a>
                         </div>
                     </div>
                     <div class="relative z-10 w-full h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,36,68,0.15)] border-4 border-surface-container-lowest">
@@ -187,15 +191,17 @@
                         Together, we are building a healthier future for Sri Lanka, one secure record at a time.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a href="#">
+                        <a href="{% url 'user:register' %}">
                             <button class="bg-secondary hover:bg-secondary-container hover:text-on-secondary-container text-on-secondary font-headline font-semibold text-lg py-4 px-10 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
                                 Register
                             </button>
                         </a>
+                        <a href="{% url 'user:user_login' %}">
                         <button class="bg-surface-container hover:bg-surface-container-high text-primary font-headline font-semibold text-lg py-4 px-10 rounded-xl transition-all active:scale-95 flex justify-center items-center gap-2">
                             Sign In
                             <span class="material-symbols-outlined">login</span>
                         </button>
+                        </a>
                     </div>
                 </div>
             </section>

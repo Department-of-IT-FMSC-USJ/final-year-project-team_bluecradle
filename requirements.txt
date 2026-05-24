@@ -2,3 +2,4 @@ asgiref
 Django
 sqlparse
 tzdata
+djangorestframework
