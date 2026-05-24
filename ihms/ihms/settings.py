@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'core_module',
     'accounts_module',
+    'infants_module',
 ]
 
 MIDDLEWARE = [
