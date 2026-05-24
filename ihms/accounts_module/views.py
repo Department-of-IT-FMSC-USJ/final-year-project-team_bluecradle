@@ -6,6 +6,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.auth import login, logout
+from django.urls import reverse
 
 def signup_role(request):
     if request.method == 'POST':
@@ -60,19 +61,9 @@ def register_phm(request):
                         is_verified=False,
                     )
 
-                    # Clear stale messages before adding new one
-                    storage = get_messages(request)
-                    for _ in storage:
-                        pass  # iterating consumes and clears them
-
-                    messages.success(request, 'Registration Successful! Account verification is pending...')
-                    return redirect('user:user_login')
+                    return redirect(f"{reverse('user:user_login')}?registered=true")
 
             except Exception as e:
-                # Clear stale messages before adding new one
-                storage = get_messages(request)
-                for _ in storage:
-                    pass  # iterating consumes and clears them
                 messages.error(request, 'Registration failed. Please try again.')
         else:
             # Add message for form validation errors

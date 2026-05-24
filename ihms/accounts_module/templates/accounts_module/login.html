@@ -17,24 +17,24 @@
         <h2 class="text-on-surface text-3xl font-extrabold mb-2">Welcome Back</h2>
         <p class="text-on-surface-variant">Sign in to access the health management portal</p>
     </div>
-
-   <!-- Message Handling -->
-{% if messages %}
-    {% for message in messages %}
-        <div class="mb-6 p-4 rounded-xl 
-            {% if 'success' in message.tags %}
-                bg-secondary-container/30 border border-secondary/20 text-secondary
-            {% else %}
-                bg-error-container/30 border border-error/20 text-error
-            {% endif %}
-            text-sm font-medium flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">
-                {% if 'success' in message.tags %}check_circle{% else %}error{% endif %}
-            </span>
-            {{ message }}
+    
+    <!-- Registration success — from query param, not messages -->
+    {% if request.GET.registered == 'true' %}
+        <div class="mb-6 p-4 rounded-xl bg-secondary-container/30 border border-secondary/20 text-secondary text-sm font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+            Registration Successful! Account verification is pending...
         </div>
-    {% endfor %}
-{% endif %}
+    {% endif %}
+
+   <!-- System messages — only for role_redirect errors -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">error</span>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
     <form class="space-y-6" method="POST" action="{% url 'user:user_login' %}">
         {% csrf_token %}
