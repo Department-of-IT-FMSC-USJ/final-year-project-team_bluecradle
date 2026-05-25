@@ -1,0 +1,173 @@
+{% extends 'accounts_module/sub_base.html' %}
+
+{% block body_content %}
+  <main class="flex-1 overflow-y-auto bg-surface-container-low px-6 py-12 lg:px-20 lg:py-24">
+    <div class="max-w-2xl mx-auto">
+      <header class="mb-12">
+        <div class="lg:hidden flex items-center gap-2 mb-8">
+          <span class="material-symbols-outlined text-primary text-3xl">child_care</span>
+          <h1 class="text-2xl font-headline font-extrabold text-primary">BlueCradle</h1>
+        </div>
+        <h2 class="text-3xl font-headline font-bold text-on-background">Parent Registration</h2>
+        <p class="text-on-surface-variant mt-2">Create your account to access your child's health records.</p>
+      </header>
+
+      <form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
+        {% csrf_token %}
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">error</span>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Section 1: Personal Information -->
+        <section>
+          <div class="flex items-center gap-3 mb-6">
+            <span class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-sm">1</span>
+            <h3 class="text-lg font-headline font-bold text-primary">Personal Information</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="block text-sm font-semibold text-on-surface-variant ml-1">Full Name</label>
+              {{ form.full_name }}
+              {% if form.full_name.errors %}
+                <p class="text-error text-xs ml-1">{{ form.full_name.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-1">
+              <label class="block text-sm font-semibold text-on-surface-variant ml-1">Personal Health Number (PHN)</label>
+              {{ form.phn }}
+              <p class="text-on-surface-variant text-xs ml-1">Found on the front page of your child's physical CHDR booklet</p>
+              {% if form.phn.errors %}
+                <p class="text-error text-xs ml-1">{{ form.phn.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Contact Details -->
+        <section>
+          <div class="flex items-center gap-3 mb-6">
+            <span class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-sm">2</span>
+            <h3 class="text-lg font-headline font-bold text-primary">Contact Details</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="block text-sm font-semibold text-on-surface-variant ml-1">Email Address</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <p class="text-error text-xs ml-1">{{ form.email.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-1">
+              <label class="block text-sm font-semibold text-on-surface-variant ml-1">
+                Contact Number
+                <span class="font-normal text-on-surface-variant/60">(Optional)</span>
+              </label>
+              {{ form.contact_no }}
+              {% if form.contact_no.errors %}
+                <p class="text-error text-xs ml-1">{{ form.contact_no.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: Account Setup -->
+        <section>
+          <div class="flex items-center gap-3 mb-6">
+            <span class="w-8 h-8 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold text-sm">3</span>
+            <h3 class="text-lg font-headline font-bold text-primary">Account Setup</h3>
+          </div>
+          <div class="space-y-6">
+            <div class="space-y-1">
+              <label class="block text-sm font-semibold text-on-surface-variant ml-1">Username</label>
+              {{ form.username }}
+              <p class="text-on-surface-variant text-xs ml-1">Automatically filled from your email address</p>
+            </div>
+
+            <!-- AJAX notice — hidden by default, shown if email already exists in system -->
+            <div id="existing-account-notice" class="hidden p-4 rounded-xl bg-secondary-container/30 border border-secondary/20 text-on-surface text-sm flex items-start gap-3">
+              <span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">info</span>
+              <span>You are already registered in the system under a different role. Please use the same password you used when you first registered.</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-1">
+                <label class="block text-sm font-semibold text-on-surface-variant ml-1">Password</label>
+                <div class="relative">
+                  {{ form.password }}
+                  <button type="button" onclick="togglePassword('{{ form.password.id_for_label }}', 'toggleIcon1')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]" id="toggleIcon1">visibility</span></button>
+                </div>
+                {% if form.password.errors %}
+                  <p class="text-error text-xs ml-1">{{ form.password.errors.0 }}</p>
+                {% endif %}
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-semibold text-on-surface-variant ml-1">Confirm Password</label>
+                <div class="relative">
+                  {{ form.confirm_password }}
+                  <button type="button" onclick="togglePassword('{{ form.confirm_password.id_for_label }}', 'toggleIcon2')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]" id="toggleIcon2">visibility</span></button>
+                </div>
+                {% if form.confirm_password.errors %}
+                  <p class="text-error text-xs ml-1">{{ form.confirm_password.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Submit -->
+        <div class="pt-4">
+          <button type="submit" class="w-full bg-secondary hover:bg-on-secondary-container text-white font-bold py-4 rounded-xl shadow-lg shadow-secondary/20 transition-all flex items-center justify-center gap-2 group">
+            Create Parent Account
+            <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </button>
+          <p class="text-center text-xs text-on-surface-variant mt-6">
+            Already have an account?
+            <a href="{% url 'user:user_login' %}" class="font-bold text-primary">Sign In</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const emailInput = document.getElementById('{{ form.email.id_for_label }}')
+    const usernameInput = document.getElementById('{{ form.username.id_for_label }}')
+    const existingNotice = document.getElementById('existing-account-notice')
+    
+    // Auto-fill username from email as user types
+    emailInput.addEventListener('input', function () {
+      usernameInput.value = this.value
+    })
+    
+    // AJAX: when user leaves the email field, silently check if it already exists
+    emailInput.addEventListener('blur', function () {
+      const email = this.value.trim()
+      if (!email) return
+    
+      fetch(`{% url 'user:check_email_exists' %}?email=${encodeURIComponent(email)}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.exists) {
+            existingNotice.classList.remove('hidden')
+          } else {
+            existingNotice.classList.add('hidden')
+          }
+        })
+    })
+    
+    // Show/hide password text
+    function togglePassword(fieldId, iconId) {
+      const input = document.getElementById(fieldId)
+      const icon = document.getElementById(iconId)
+      const isPassword = input.getAttribute('type') === 'password'
+      input.setAttribute('type', isPassword ? 'text' : 'password')
+      icon.textContent = isPassword ? 'visibility_off' : 'visibility'
+    }
+  </script>
+{% endblock %}

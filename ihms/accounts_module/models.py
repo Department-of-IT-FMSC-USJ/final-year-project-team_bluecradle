@@ -40,9 +40,36 @@ class PHM_User(models.Model):
     
 
 # ---------------- PARENT MODEL ----------------
-    # Name it as Parent
+class Parent(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='guardian_profile'   # ⚠️ MUST be guardian_profile — Minoli's permission.py checks this exact name
+    )
+    full_name = models.CharField(max_length=200)
+    phn = models.CharField(max_length=50, unique=True)        # Personal Health Number from physical CHDR booklet
+    contact_no = models.CharField(max_length=10, blank=True, null=True)   # Optional
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f'{self.full_name} - PHN: {self.phn}'
 
 
 # ---------------- MOH MODEL ----------------
-    # Name it as MOH_Officer
+class MOH_Officer(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='moh_profile'        # Must be moh_profile — Minoli's permission.py checks this
+    )
+    full_name = models.CharField(max_length=200)
+    employee_id = models.CharField(max_length=50, unique=True)   # MOH Officer's official employee ID
+    moh_division = models.CharField(max_length=100)
+    contact_no = models.CharField(max_length=10)
+    is_verified = models.BooleanField(default=False)    # Admin verifies via Django admin panel
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.full_name} - {self.moh_division}'
