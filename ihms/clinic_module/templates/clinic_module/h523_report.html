@@ -1,0 +1,169 @@
+{% load static %}
+{% extends 'clinic_module/sub_base.html' %}
+
+{% block body_content %}
+<main class="ml-72 flex-1 flex flex-col">
+    <!-- Top Nav -->
+    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'clinic:phm_dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-xl font-extrabold text-primary font-headline">Daily Work Return — H 523</h2>
+                <p class="text-xs text-on-surface-variant font-medium">{{ h523.report_date }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- Date picker for regenerating past reports -->
+            <form method="GET" action="{% url 'clinic:h523_report' %}" class="flex items-center gap-2">
+                <input type="date" name="date" value="{{ selected_date }}"
+                    class="px-3 py-2 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                <button type="submit"
+                    class="px-4 py-2 rounded-xl border border-secondary text-secondary text-sm font-bold hover:bg-secondary/10 transition-colors">
+                    Load
+                </button>
+            </form>
+            <button onclick="window.print()"
+                class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
+                <span class="material-symbols-outlined text-lg">download</span>
+                Download / Print
+            </button>
+        </div>
+    </header>
+
+    <div class="p-8 space-y-6">
+
+        <!-- Report Header Info -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+            <div class="grid grid-cols-3 gap-6">
+                <div>
+                    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">PHM Officer</p>
+                    <p class="text-sm font-bold text-on-surface">{{ h523.phm_name }}</p>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">MOH Division</p>
+                    <p class="text-sm font-bold text-on-surface">{{ h523.moh_division }}</p>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Report Date</p>
+                    <p class="text-sm font-bold text-on-surface">{{ h523.report_date }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- H 523 Matrix -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant/10">
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Form H 523 — Daily Statement</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
+                            <th class="px-6 py-3">Service Category</th>
+                            <th class="px-6 py-3">FHB Code</th>
+                            <th class="px-6 py-3 text-right">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">New Registrations</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">NEW_REG</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold text-primary font-headline">{{ h523.new_registrations }}</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">Growth Monitoring Attendance</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">GM_ATTENDANCE</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold text-primary font-headline">{{ h523.growth_monitoring_attendance }}</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">Vaccinations Administered (EPI 3/79)</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">EPI_VACCINATION</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold text-primary font-headline">{{ h523.vaccinations_administered }}</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">Defaulters Flagged / Missed Clinic</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">MISSED_CLINIC</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold {% if h523.defaulters_flagged > 0 %}text-error{% else %}text-primary{% endif %} font-headline">
+                                    {{ h523.defaulters_flagged }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">Postnatal Visits — First 10 Days</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">POSTNATAL_10</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold text-primary font-headline">{{ h523.postnatal_visits_10_days }}</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">Postnatal Visits — 42 Days</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">POSTNATAL_42</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold text-primary font-headline">{{ h523.postnatal_visits_42_days }}</span>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-on-surface">Malnutrition / Low Birth Weight Flags</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant font-mono">MALNUTRITION_FLAG</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-lg font-extrabold {% if h523.malnutrition_flags > 0 %}text-error{% else %}text-primary{% endif %} font-headline">
+                                    {{ h523.malnutrition_flags }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <!-- Total Row -->
+                    <tfoot>
+                        <tr class="bg-surface-container-low">
+                            <td class="px-6 py-4 text-sm font-extrabold text-on-surface" colspan="2">Total Clinical Actions</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-xl font-extrabold text-primary font-headline">
+                                    {{ h523.new_registrations|add:h523.growth_monitoring_attendance|add:h523.vaccinations_administered|add:h523.defaulters_flagged|add:h523.postnatal_visits_10_days|add:h523.postnatal_visits_42_days|add:h523.malnutrition_flags }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Certification Block -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+            <p class="text-xs text-on-surface-variant">
+                I certify that the above is a true and correct record of work performed on {{ h523.report_date }}.
+            </p>
+            <div class="mt-6 flex justify-between items-end">
+                <div>
+                    <div class="w-48 border-b border-on-surface-variant mt-8"></div>
+                    <p class="text-xs text-on-surface-variant mt-1">Signature of PHM Officer</p>
+                    <p class="text-xs font-bold text-on-surface mt-0.5">{{ h523.phm_name }}</p>
+                </div>
+                <div class="text-right">
+                    <div class="w-48 border-b border-on-surface-variant mt-8"></div>
+                    <p class="text-xs text-on-surface-variant mt-1">Date</p>
+                    <p class="text-xs font-bold text-on-surface mt-0.5">{{ h523.report_date }}</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Print styles -->
+<style>
+    @media print {
+        .ml-72, nav, header button, form { display: none !important; }
+        main { margin-left: 0 !important; }
+    }
+</style>
+
+{% endblock %}
