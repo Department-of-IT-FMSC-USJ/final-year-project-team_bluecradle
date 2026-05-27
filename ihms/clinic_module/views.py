@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent
-from .serializers import ClinicSessionSerializer, GrowthRecordSerializer
+from .serializers import ClinicSessionSerializer, GrowthRecordSerializer, ImmunizationEventSerializer
 from django.contrib.auth.decorators import login_required
 from infants_module.models import Infant
 from django.db import models
@@ -186,6 +186,53 @@ def growth_record(request, phn):
     }
     return render(request, 'clinic/growth_record.html', context)
 
+@login_required
+def immunization(request, phn):
+    phm = request.user.phm_profile
+    infant = get_object_or_404(Infant, phn=phn, registered_phm=phm)
+
+    sessions = ClinicSession.objects.filter(
+        phm=phm
+    ).order_by('-session_date')[:10]
+
+    immunization_events = ImmunizationEvent.objects.filter(
+        infant=infant
+    ).order_by('scheduled_date')
+
+    if request.method == 'POST':
+        data = request.POST
+        dose_status = data['dose_status']
+
+        # Check unique_together constraint
+        if ImmunizationEvent.objects.filter(
+            infant=infant,
+            vaccine=data['vaccine']
+        ).exists():
+            messages.error(request, f"A record for {data['vaccine']} already exists. Use the update function.")
+            return redirect('clinic:immunization', phn=phn)
+
+        ImmunizationEvent.objects.create(
+            infant=infant,
+            session_id=data['session'],
+            vaccine=data['vaccine'],
+            dose_status=dose_status,
+            date_administered=data.get('date_administered') or None,
+            batch_number=data.get('batch_number') or None,
+            adverse_event_noted='adverse_event_noted' in data,
+            adverse_event_details=data.get('adverse_event_details') or None,
+            scheduled_date=data.get('scheduled_date') or None,
+        )
+        messages.success(request, "Vaccination record saved.")
+        return redirect('clinic:infant_detail', phn=phn)
+
+    context = {
+        'infant': infant,
+        'sessions': sessions,
+        'immunization_events': immunization_events,
+        'vaccine_choices': ImmunizationEvent.VACCINE_CHOICES,
+    }
+    return render(request, 'clinic/immunization.html', context)
+
 class ClinicSessionListCreateView(APIView):
     permission_classes = [IsPHM]
 
@@ -249,4 +296,47 @@ class GrowthRecordListCreateView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ImmunizationEventListCreateView(APIView):
+    permission_classes = [IsPHM]
+
+    def get(self, request, phn):
+        # Return full immunization history for one infant.
+        records = ImmunizationEvent.objects.filter(
+            infant__phn=phn,
+            infant__registered_phm=request.user.phm_profile
+        ).order_by('scheduled_date')
+        serializer = ImmunizationEventSerializer(records, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, phn):
+        serializer = ImmunizationEventSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ImmunizationEventDetailView(APIView):
+    permission_classes = [IsPHM]
+
+    def get_object(self, pk, request):
+        return get_object_or_404(
+            ImmunizationEvent,
+            pk=pk,
+            infant__registered_phm=request.user.phm_profile
+        )
+
+    def get(self, request, pk):
+        record = self.get_object(pk, request)
+        serializer = ImmunizationEventSerializer(record)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        record = self.get_object(pk, request)
+        serializer = ImmunizationEventSerializer(record, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

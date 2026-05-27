@@ -1,0 +1,162 @@
+{% load static %}
+{% extends 'clinic_module/sub_base.html' %}
+
+{% block body_content %}
+<main class="ml-72 flex-1 flex flex-col">
+    <!-- Top Nav -->
+    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'clinic:infant_detail' infant.phn %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-xl font-extrabold text-primary font-headline">Immunization</h2>
+                <p class="text-xs text-on-surface-variant font-medium">{{ infant.full_name }} — {{ infant.phn }}</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="p-8 grid grid-cols-2 gap-6">
+
+        <!-- Left — Record Vaccine Form -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+            <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-6">Record Vaccination</h3>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium
+                    {% if message.tags == 'error' %}bg-error-container text-error
+                    {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'clinic:immunization' infant.phn %}" class="space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Vaccine *</label>
+                    <select name="vaccine" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                        <option value="">Select vaccine</option>
+                        {% for value, label in vaccine_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Status *</label>
+                    <select name="dose_status" required id="dose_status"
+                        class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                        <option value="">Select status</option>
+                        <option value="ADMINISTERED">Administered</option>
+                        <option value="DEFAULTED">Defaulted</option>
+                        <option value="CONTRAINDICATED">Contraindicated</option>
+                    </select>
+                </div>
+
+                <!-- Administered fields -->
+                <div id="administered_fields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Date Administered *</label>
+                        <input type="date" name="date_administered"
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Batch Number *</label>
+                        <input type="text" name="batch_number"
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. BN-2024-0045">
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-surface-container rounded-xl">
+                        <input type="checkbox" name="adverse_event_noted" id="adverse_event"
+                            class="w-4 h-4 accent-error">
+                        <label for="adverse_event" class="text-sm font-medium text-on-surface">Adverse event noted</label>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Adverse Event Details</label>
+                        <textarea name="adverse_event_details" rows="2"
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="Optional — describe if adverse event occurred"></textarea>
+                    </div>
+                </div>
+
+                <!-- Defaulted fields -->
+                <div id="defaulted_fields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Scheduled Date *</label>
+                        <input type="date" name="scheduled_date"
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Clinic Session *</label>
+                    <select name="session" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                        <option value="">Select session</option>
+                        {% for session in sessions %}
+                        <option value="{{ session.id }}">{{ session.session_date|date:"d M Y" }} — {{ session.location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-2.5 rounded-xl bg-secondary text-white text-sm font-bold hover:bg-on-secondary-container transition-colors shadow-md">
+                    Save Record
+                </button>
+            </form>
+        </div>
+
+        <!-- Right — Immunization History -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+            <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Vaccination History</h3>
+            <div class="space-y-3">
+                {% for imm in immunization_events %}
+                <div class="flex items-center justify-between p-3 rounded-xl border
+                    {% if imm.dose_status == 'ADMINISTERED' %}bg-secondary-container/20 border-secondary-container/30
+                    {% elif imm.dose_status == 'DEFAULTED' %}bg-error-container/20 border-error-container/30
+                    {% else %}bg-surface-container border-outline-variant/20{% endif %}">
+                    <div>
+                        <p class="text-sm font-bold text-on-surface">{{ imm.get_vaccine_display }}</p>
+                        {% if imm.date_administered %}
+                        <p class="text-[10px] text-on-surface-variant">{{ imm.date_administered|date:"d M Y" }}</p>
+                        {% elif imm.scheduled_date %}
+                        <p class="text-[10px] text-on-surface-variant">Due: {{ imm.scheduled_date|date:"d M Y" }}</p>
+                        {% endif %}
+                        {% if imm.is_defaulter %}
+                        <p class="text-[10px] text-error font-bold">{{ imm.defaulter_days_overdue }} days overdue</p>
+                        {% endif %}
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-1 rounded-full
+                        {% if imm.dose_status == 'ADMINISTERED' %}bg-secondary-container text-on-secondary-container
+                        {% elif imm.dose_status == 'DEFAULTED' %}bg-error-container text-error
+                        {% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+                        {{ imm.get_dose_status_display }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-on-surface-variant text-center py-6">No vaccination records yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    const doseStatus = document.getElementById('dose_status');
+    const administeredFields = document.getElementById('administered_fields');
+    const defaultedFields = document.getElementById('defaulted_fields');
+
+    doseStatus.addEventListener('change', function() {
+        administeredFields.classList.add('hidden');
+        defaultedFields.classList.add('hidden');
+        if (this.value === 'ADMINISTERED') administeredFields.classList.remove('hidden');
+        if (this.value === 'DEFAULTED') defaultedFields.classList.remove('hidden');
+    });
+</script>
+
+{% endblock %}
