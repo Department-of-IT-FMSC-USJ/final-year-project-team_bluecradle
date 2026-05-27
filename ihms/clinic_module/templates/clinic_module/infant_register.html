@@ -1,0 +1,116 @@
+{% load static %}
+{% extends 'clinic_module/sub_base.html' %}
+
+{% block body_content %}
+<main class="ml-72 flex-1 flex flex-col">
+    <!-- Top Nav -->
+    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'clinic:phm_dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-xl font-extrabold text-primary font-headline">Register New Infant</h2>
+                <p class="text-xs text-on-surface-variant font-medium">Fill in the CHDR details</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="p-8 max-w-3xl mx-auto w-full">
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-6 px-4 py-3 rounded-xl text-sm font-medium
+                {% if message.tags == 'error' %}bg-error-container text-error
+                {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'clinic:infant_register' %}" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- Personal Details -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-6">Personal Details</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">PHN (Personal Health Number) *</label>
+                        <input type="text" name="phn" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. PHN-2024-0001">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">First Name *</label>
+                        <input type="text" name="first_name" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Last Name *</label>
+                        <input type="text" name="last_name" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Full Name *</label>
+                        <input type="text" name="full_name" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="Full legal name as on birth certificate">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Date of Birth *</label>
+                        <input type="date" name="date_of_birth" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Sex *</label>
+                        <select name="sex" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                            <option value="">Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Birth Order *</label>
+                        <input type="number" name="birth_order" min="1" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. 1 for firstborn">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Birth Anthropometrics -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-6">Birth Anthropometrics</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Birth Weight (kg) *</label>
+                        <input type="number" name="birth_weight_kg" step="0.01" min="0.5" max="6.0" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. 3.20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Birth Length (cm) *</label>
+                        <input type="number" name="birth_length_cm" step="0.1" min="30" max="70" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. 50.5">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex justify-end gap-4">
+                <a href="{% url 'clinic:phm_dashboard' %}"
+                    class="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-bold text-on-surface-variant hover:bg-surface-container transition-colors">
+                    Cancel
+                </a>
+                <button type="submit"
+                    class="px-6 py-2.5 rounded-xl bg-secondary text-white text-sm font-bold hover:bg-on-secondary-container transition-colors shadow-md">
+                    Register Infant
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
