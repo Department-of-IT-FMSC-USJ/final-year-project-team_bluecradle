@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'accounts_module',
     'infants_module',
     'clinic_module',
+    'ml_module',
 ]
 
 MIDDLEWARE = [
@@ -123,3 +124,9 @@ STATIC_URL = 'static/'
 
 # Custom Built User
 AUTH_USER_MODEL = 'accounts_module.User'
+
+# Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

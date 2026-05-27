@@ -3,3 +3,7 @@ Django
 sqlparse
 tzdata
 djangorestframework
+celery
+redis
+numpy 
+tensorflow
