@@ -21,6 +21,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core_module.urls', namespace='core')),
     path('user/', include('accounts_module.urls', namespace='user')),
+
+    path('infants/', include('infants_module.urls', namespace='infants')),
     path('api/infants/', include('infants_module.urls', namespace='infants')),
 ]
 
