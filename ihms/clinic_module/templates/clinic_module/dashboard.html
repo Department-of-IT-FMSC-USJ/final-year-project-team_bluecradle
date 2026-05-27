@@ -1,7 +1,40 @@
-{% load static %}
 {% extends 'clinic_module/sub_base.html' %}
 
 {% block body_content %}
+<!-- TopNavBar (Authority: JSON & Design System) -->
+<header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center gap-6">
+<div>
+<h2 class="text-xl font-extrabold text-primary font-headline">Dashboard</h2>
+<p class="text-xs text-on-surface-variant font-medium">{{ today|date:"l, d F Y" }}</p>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search PHN or Name..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-secondary-container/30 rounded-full border border-secondary-container/50">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="sync">sync</span>
+<span class="text-[11px] font-bold text-on-secondary-container">
+    {% if unsynced_count > 0 %}
+        {{ unsynced_count }} pending
+    {% else %}
+        All synced
+    {% endif %}
+</span>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<a href="{% url 'clinic:infant_register' %}">
+<button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                    New Infant Record
+                </button></a>
+</div>
+</header>
 <div class="p-8 flex gap-8">
 <!-- Left Canvas (Stats & Table) -->
 <div class="flex-1 space-y-8">
@@ -43,9 +76,9 @@
 <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10">
 <div class="px-6 py-5 flex justify-between items-center">
 <h3 class="text-lg font-bold text-primary font-headline">Recent Infant Records</h3>
-<button class="text-xs font-bold text-secondary flex items-center gap-1 hover:underline">
-                            View All <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-</button>
+<a href="{% url 'clinic:infant_search' %}" class="text-xs font-bold text-secondary flex items-center gap-1 hover:underline">
+    View All <span class="material-symbols-outlined text-xs">chevron_right</span>
+</a>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left border-collapse">
@@ -131,9 +164,6 @@
 <span class="text-sm opacity-80">Vaccines Ready</span>
 <span class="material-symbols-outlined text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
 </div>
-<button class="w-full mt-4 bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-bold transition-colors">
-                            DOWNLOAD CLINIC LIST
-                        </button>
 </div>
 <!-- Abstract Background Pattern -->
 <div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
@@ -142,7 +172,7 @@
 <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/10">
 <h4 class="text-sm font-bold text-primary mb-5 uppercase tracking-widest flex items-center justify-between">
                         Active Alerts
-                        <span class="bg-error-container text-error text-[10px] px-2 py-0.5 rounded-full">5 NEW</span>
+                        <span class="bg-error-container text-error text-[10px] px-2 py-0.5 rounded-full">{{ active_alerts|length }} NEW</span>
 </h4>
 <ul class="space-y-4">
 {% for alert in active_alerts %}
@@ -161,9 +191,6 @@
 <li class="text-xs text-on-surface-variant">No active alerts.</li>
 {% endfor %}
 </ul>
-<button class="w-full mt-6 text-xs font-bold text-secondary-container bg-secondary px-4 py-2.5 rounded-xl transition-all shadow-sm">
-                        VIEW TRIAGE BOARD
-                    </button>
 </div>
 </div>
 </div>

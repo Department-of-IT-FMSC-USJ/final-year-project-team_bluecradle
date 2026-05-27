@@ -74,7 +74,7 @@ class GrowthRecordSerializer(serializers.ModelSerializer):
             )
         return attrs
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> GrowthRecord:
         infant = validated_data['infant']
         visit_date = validated_data['visit_date']
 

@@ -1,4 +1,5 @@
 {% extends 'core_module/base.html' %}
+{% load static %}
 
 {% block head_and_body %}
 <style>
@@ -23,7 +24,7 @@
 </div>
 <nav class="flex-1 space-y-1 overflow-y-auto no-scrollbar">
 <!-- Dashboard (Active) -->
-<a class="flex items-center gap-3 bg-[#1A3A5C] text-white rounded-xl px-4 py-3 mx-2 transition-colors" href="{% url 'clinic:phm_dashboard' %}">
+<a class="flex items-center gap-3 bg-[#1A3A5C] text-white rounded-xl px-4 py-3 mx-2 transition-colors" href="{% url 'clinic:dashboard' %}">
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
 <span class="font-medium">Dashboard</span>
 </a>
@@ -31,7 +32,7 @@
 <span class="material-symbols-outlined" data-icon="child_care">child_care</span>
 <span class="font-medium">Infant Profiles</span>
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="#">
+<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:infant_search' %}?filter=risk">
 <span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
 <span class="font-medium">Growth Monitoring</span>
 </a>
@@ -40,7 +41,9 @@
 <span class="material-symbols-outlined" data-icon="vaccines">vaccines</span>
 <span class="font-medium">Vaccinations</span>
 </div>
-<span class="bg-error text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
+{% if overdue_count %}
+<span class="bg-error text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ overdue_count }}</span>
+{% endif %}
 </a>
 <a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="#">
 <span class="material-symbols-outlined" data-icon="event_note">event_note</span>
@@ -51,19 +54,13 @@
 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 <span class="font-medium">Alerts</span>
 </div>
-<span class="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">5</span>
+{% if active_alerts %}
+<span class="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ active_alerts|length }}</span>
+{% endif %}
 </a>
 <a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:h523_report' %}">
 <span class="material-symbols-outlined" data-icon="assessment">assessment</span>
 <span class="font-medium">Reports</span>
-</a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="#">
-<span class="material-symbols-outlined" data-icon="family_restroom">family_restroom</span>
-<span class="font-medium">Parents &amp; Families</span>
-</a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="#">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-<span class="font-medium">Settings</span>
 </a>
 </nav>
 <!-- User Profile Card -->
@@ -74,55 +71,30 @@
 <img alt="PHM Profile" class="w-full h-full object-cover" data-alt="Portrait of a female public health worker" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoYcJmoIw3CUIg_Km0Xu4d0xfVZQPPJai_37GHRXKpyOvZYSxcksButwPWJWAlpIB8aapMdx3ibVTd61e-DtlViUMfPMTTGb4ErckqbRo9ZVFxnMHa81GkozZWWMYNm9t8lxfWJy3_7aDn9BvjxvEIPPBu4K36j3bOc6R7IZBASgoqpIbG21m27UwehMkQ9S07SzU7oOEtXpACNcIqulAl-Ci2PqpJ55-qgCstEqUIh_TFwHdiiVFWe_CHP5SVIrCAiXzEQRqmnAJb">
 </div>
 <div>
-<p class="font-bold text-sm text-on-surface">{{ request.user.get_full_name }}</p>
+<p class="font-bold text-sm text-on-surface">{{ request.user.phm_profile.full_name|upper }}</p>
 <p class="text-xs text-on-surface-variant">MOH Division: {{ request.user.phm_profile.moh_division }}</p>
 </div>
 </div>
 <div class="flex items-center gap-1.5">
-<div class="w-2 h-2 rounded-full bg-secondary"></div>
-<span class="text-[11px] font-semibold text-secondary uppercase tracking-tight">Synced</span>
+    <div class="w-2 h-2 rounded-full {% if unsynced_count > 0 %}bg-error{% else %}bg-secondary{% endif %}"></div>
+    <span class="text-[11px] font-semibold {% if unsynced_count > 0 %}text-error{% else %}text-secondary{% endif %} uppercase tracking-tight">
+        {% if unsynced_count > 0 %}{{ unsynced_count }} pending{% else %}Synced{% endif %}
+    </span>
 </div>
 </div>
+<div class="px-4 mt-2">
+    <a href="{% url 'user:user_logout' %}"
+        class="flex items-center gap-3 text-error px-4 py-3 mx-0 hover:bg-error-container/20 transition-colors rounded-xl w-full">
+        <span class="material-symbols-outlined">logout</span>
+        <span class="font-medium text-sm">Logout</span>
+    </a>
 </div>
 </aside>
 <!-- Main Content Area -->
 <main class="ml-72 flex-1 flex flex-col">
-<!-- TopNavBar (Authority: JSON & Design System) -->
-<header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
-<div class="flex items-center gap-6">
-<div>
-<h2 class="text-xl font-extrabold text-primary font-headline">Dashboard</h2>
-<p class="text-xs text-on-surface-variant font-medium">Monday, 16 March 2026</p>
-</div>
-<div class="relative group">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
-<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search PHN or Name..." type="text">
-</div>
-</div>
-<div class="flex items-center gap-4">
-<div class="flex items-center gap-2 px-3 py-1.5 bg-secondary-container/30 rounded-full border border-secondary-container/50">
-<span class="material-symbols-outlined text-secondary text-sm" data-icon="sync">sync</span>
-<span class="text-[11px] font-bold text-on-secondary-container">
-    {% if unsynced_count > 0 %}
-        {{ unsynced_count }} pending
-    {% else %}
-        All synced
-    {% endif %}
-</span>
-</div>
-<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-</button>
-<button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
-<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
-                    New Infant Record
-                </button>
-</div>
-</header>
 {% block body_content %}
 {% endblock %}
 
 <script type="module" src="{% static 'js/app.js' %}"></script>
 </body>
-{% enblock %}
+{% endblock %}

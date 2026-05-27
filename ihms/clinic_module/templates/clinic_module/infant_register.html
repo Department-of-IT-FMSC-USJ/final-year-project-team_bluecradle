@@ -1,12 +1,11 @@
-{% load static %}
 {% extends 'clinic_module/sub_base.html' %}
+{% load static %}
 
 {% block body_content %}
-<main class="ml-72 flex-1 flex flex-col">
     <!-- Top Nav -->
     <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
         <div class="flex items-center gap-4">
-            <a href="{% url 'clinic:phm_dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+            <a href="{% url 'clinic:dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
                 <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
             </a>
             <div>
@@ -101,7 +100,7 @@
 
             <!-- Submit -->
             <div class="flex justify-end gap-4">
-                <a href="{% url 'clinic:phm_dashboard' %}"
+                <a href="{% url 'clinic:dashboard' %}"
                     class="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-bold text-on-surface-variant hover:bg-surface-container transition-colors">
                     Cancel
                 </a>
