@@ -115,10 +115,30 @@
                 </div>
             </div>
 
-            <!-- Middle + Right — Growth History + Immunization -->
+            <!-- Middle + Right — Growth Chart + History + Immunization -->
             <div class="col-span-2 space-y-6">
 
-                <!-- Latest Growth Record -->
+                <!-- Full WHO Growth Chart -->
+                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Growth Trajectory</h3>
+                        <div class="flex items-center gap-2">
+                            {% if latest_growth %}
+                            <span class="text-xs text-on-surface-variant">Latest WHZ:
+                                <span class="font-bold
+                                    {% if latest_growth.who_classification == 'SAM' %}text-error
+                                    {% elif latest_growth.who_classification == 'MAM' %}text-on-tertiary-fixed-variant
+                                    {% else %}text-secondary{% endif %}">
+                                    {{ latest_growth.whz|floatformat:2|default:"—" }}
+                                </span>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <canvas id="growthChart" height="120"></canvas>
+                </div>
+
+                <!-- Latest Measurement Stats -->
                 {% if latest_growth %}
                 <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
                     <div class="flex justify-between items-center mb-4">
@@ -151,7 +171,7 @@
                 </div>
                 {% endif %}
 
-                <!-- Growth History -->
+                <!-- Growth History Table -->
                 <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Growth History</h3>
@@ -225,4 +245,118 @@
         </div>
     </div>
 </main>
+
+<script>
+const visitLabels = [
+    {% for gr in growth_records reversed %}
+        "{{ gr.visit_date|date:'d M Y' }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const whzData = [
+    {% for gr in growth_records reversed %}
+        {{ gr.whz|default:"null" }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const visitCount = visitLabels.length;
+const samLine    = Array(visitCount).fill(-3);
+const mamLine    = Array(visitCount).fill(-2);
+const normalLine = Array(visitCount).fill(0);
+
+const ctx = document.getElementById('growthChart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: visitLabels,
+        datasets: [
+            {
+                label: 'WHZ Score',
+                data: whzData,
+                borderColor: '#0ea5e9',
+                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                borderWidth: 2.5,
+                pointBackgroundColor: whzData.map(v => {
+                    if (v === null) return '#94a3b8';
+                    if (v < -3) return '#ef4444';
+                    if (v < -2) return '#f59e0b';
+                    return '#22c55e';
+                }),
+                pointRadius: 5,
+                tension: 0.3,
+                fill: false,
+            },
+            {
+                label: 'SAM Threshold (-3 SD)',
+                data: samLine,
+                borderColor: '#ef4444',
+                borderWidth: 1.5,
+                borderDash: [6, 3],
+                pointRadius: 0,
+                fill: false,
+            },
+            {
+                label: 'MAM Threshold (-2 SD)',
+                data: mamLine,
+                borderColor: '#f59e0b',
+                borderWidth: 1.5,
+                borderDash: [6, 3],
+                pointRadius: 0,
+                fill: false,
+            },
+            {
+                label: 'Median (0 SD)',
+                data: normalLine,
+                borderColor: '#22c55e',
+                borderWidth: 1,
+                borderDash: [4, 4],
+                pointRadius: 0,
+                fill: false,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 10 }, boxWidth: 12 }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) {
+                        if (ctx.dataset.label === 'WHZ Score') {
+                            const v = ctx.raw;
+                            if (v === null) return 'WHZ: No data';
+                            const status = v < -3 ? 'SAM' : v < -2 ? 'MAM' : 'Normal';
+                            return `WHZ: ${v} (${status})`;
+                        }
+                        return `${ctx.dataset.label}: ${ctx.raw}`;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                min: -5,
+                max: 3,
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                ticks: { font: { size: 10 } },
+                title: {
+                    display: true,
+                    text: 'WHZ Score',
+                    font: { size: 10, weight: 'bold' }
+                }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 } }
+            }
+        }
+    }
+});
+</script>
+
 {% endblock %}

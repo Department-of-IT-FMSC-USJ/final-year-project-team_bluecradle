@@ -1,0 +1,224 @@
+{% load static %}
+{% extends 'clinic_module/sub_base.html' %}
+
+{% block body_content %}
+<main class="ml-72 flex-1 flex flex-col">
+    <!-- Top Nav -->
+    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'clinic:infant_detail' infant.phn %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-xl font-extrabold text-primary font-headline">Growth Monitoring</h2>
+                <p class="text-xs text-on-surface-variant font-medium">{{ infant.full_name }} — {{ infant.phn }}</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="p-8 grid grid-cols-2 gap-6">
+
+        <!-- Left — Entry Form -->
+        <div class="space-y-6">
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-6">New Measurement</h3>
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium
+                        {% if message.tags == 'error' %}bg-error-container text-error
+                        {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" action="{% url 'clinic:growth_record' infant.phn %}" class="space-y-4">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Visit Date *</label>
+                        <input type="date" name="visit_date" required
+                            value="{{ today }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Weight (kg) *</label>
+                            <input type="number" name="weight_kg" step="0.01" min="1" max="30" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="e.g. 6.20">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Height (cm) *</label>
+                            <input type="number" name="height_cm" step="0.1" min="30" max="130" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="e.g. 63.0">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">MUAC (mm)</label>
+                            <input type="number" name="muac_mm" step="0.1" min="80" max="200"
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="Optional">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">WHZ Score *</label>
+                            <input type="number" name="whz" step="0.01" min="-6" max="6" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="From igrowup">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">WAZ Score</label>
+                            <input type="number" name="waz" step="0.01" min="-6" max="6"
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="Optional">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">HAZ Score</label>
+                            <input type="number" name="haz" step="0.01" min="-6" max="6"
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="Optional">
+                        </div>
+                    </div>
+
+                    <!-- Oedema Flag -->
+                    <div class="flex items-center gap-3 p-3 bg-error-container/20 rounded-xl border border-error-container/30">
+                        <input type="checkbox" name="bilateral_pitting_oedema" id="oedema"
+                            class="w-4 h-4 accent-error">
+                        <label for="oedema" class="text-sm font-bold text-error">Bilateral Pitting Oedema Present</label>
+                    </div>
+
+                    <!-- Session -->
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Clinic Session *</label>
+                        <select name="session" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                            <option value="">Select session</option>
+                            {% for session in sessions %}
+                            <option value="{{ session.id }}">{{ session.session_date|date:"d M Y" }} — {{ session.location }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full py-2.5 rounded-xl bg-secondary text-white text-sm font-bold hover:bg-on-secondary-container transition-colors shadow-md">
+                        Save Measurement
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right — Growth History Table -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+            <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Visit History</h3>
+            <!-- Sparkline above history table -->
+            <div class="mb-4">
+                <canvas id="sparklineChart" height="80"></canvas>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest bg-surface-container-low">
+                            <th class="px-4 py-2">Date</th>
+                            <th class="px-4 py-2">Weight</th>
+                            <th class="px-4 py-2">Height</th>
+                            <th class="px-4 py-2">WHZ</th>
+                            <th class="px-4 py-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for gr in growth_records %}
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-4 py-2 text-xs">{{ gr.visit_date|date:"d M Y" }}</td>
+                            <td class="px-4 py-2 text-xs">{{ gr.weight_kg }} kg</td>
+                            <td class="px-4 py-2 text-xs">{{ gr.height_cm }} cm</td>
+                            <td class="px-4 py-2 text-xs">{{ gr.whz|floatformat:2|default:"—" }}</td>
+                            <td class="px-4 py-2">
+                                {% if gr.who_classification == 'SAM' %}
+                                    <span class="bg-error-container text-error text-[10px] font-bold px-2 py-0.5 rounded-full">SAM</span>
+                                {% elif gr.who_classification == 'MAM' %}
+                                    <span class="bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold px-2 py-0.5 rounded-full">MAM</span>
+                                {% else %}
+                                    <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full">Normal</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-6 text-center text-xs text-on-surface-variant">No records yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+<script>
+const sparkLabels = [
+    {% for gr in growth_records reversed %}
+        "{{ gr.visit_date|date:'d M Y' }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+const sparkData = [
+    {% for gr in growth_records reversed %}
+        {{ gr.whz|default:"null" }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const sparkCtx = document.getElementById('sparklineChart').getContext('2d');
+new Chart(sparkCtx, {
+    type: 'line',
+    data: {
+        labels: sparkLabels,
+        datasets: [
+            {
+                label: 'WHZ',
+                data: sparkData,
+                borderColor: '#0ea5e9',
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.3,
+                fill: false,
+            },
+            {
+                label: 'SAM (-3)',
+                data: Array(sparkLabels.length).fill(-3),
+                borderColor: '#ef4444',
+                borderWidth: 1,
+                borderDash: [4, 2],
+                pointRadius: 0,
+                fill: false,
+            },
+            {
+                label: 'MAM (-2)',
+                data: Array(sparkLabels.length).fill(-2),
+                borderColor: '#f59e0b',
+                borderWidth: 1,
+                borderDash: [4, 2],
+                pointRadius: 0,
+                fill: false,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { min: -5, max: 3, ticks: { font: { size: 9 } } },
+            x: { ticks: { font: { size: 9 } } }
+        }
+    }
+});
+</script>
+{% endblock %}
