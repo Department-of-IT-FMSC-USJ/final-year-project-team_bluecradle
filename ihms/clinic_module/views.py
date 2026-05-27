@@ -14,6 +14,120 @@ from accounts_module.permission import IsPHM
 from .reporting_utils import generate_h523_data
 
 @login_required
+def phm_dashboard(request):
+    phm = request.user.phm_profile
+    today = date.today()
+    first_of_month = today.replace(day=1)
+
+    # Stat cards
+    all_infants = Infant.objects.filter(registered_phm=phm)
+    total_registered = all_infants.count()
+    new_this_month = all_infants.filter(created_at__date__gte=first_of_month).count()
+
+    vaccinations_due = ImmunizationEvent.objects.filter(
+        infant__registered_phm=phm,
+        dose_status='DEFAULTED',
+        is_defaulter=False
+    ).count()
+
+    overdue_count = ImmunizationEvent.objects.filter(
+        infant__registered_phm=phm,
+        is_defaulter=True
+    ).count()
+
+    at_risk_count = MLRiskAssessment.objects.filter(
+        infant__registered_phm=phm,
+        risk_level__in=['SAM', 'MAM']
+    ).values('infant').distinct().count()
+
+    # Next clinic session
+    next_clinic = ClinicSession.objects.filter(
+        phm=phm,
+        session_date__gte=today
+    ).order_by('session_date').first()
+
+    # Recent infants with assembled data
+    recent_infants = []
+    for infant in all_infants.order_by('-created_at')[:10]:
+        latest_growth = GrowthRecord.objects.filter(
+            infant=infant
+        ).order_by('-visit_date').first()
+
+        latest_ml = MLRiskAssessment.objects.filter(
+            infant=infant
+        ).order_by('-assessed_at').first()
+
+        next_vaccine = ImmunizationEvent.objects.filter(
+            infant=infant,
+            dose_status='DEFAULTED',
+            is_defaulter=False
+        ).order_by('scheduled_date').first()
+
+        # Calculate age display
+        age_days = (today - infant.date_of_birth).days
+        if age_days < 30:
+            age_display = f"{age_days}d"
+        elif age_days < 365:
+            months = age_days // 30
+            days = age_days % 30
+            age_display = f"{months}m {days}d"
+        else:
+            years = age_days // 365
+            months = (age_days % 365) // 30
+            age_display = f"{years}y {months}m"
+
+        recent_infants.append({
+            'infant': infant,
+            'age_display': age_display,
+            'last_visit': latest_growth.visit_date if latest_growth else None,
+            'who_classification': latest_growth.who_classification if latest_growth else 'NORMAL',
+            'ml_risk': latest_ml.risk_level if latest_ml else 'NORMAL',
+            'next_vaccine': next_vaccine.vaccine if next_vaccine else None,
+        })
+
+    # Active alerts
+    active_alerts = []
+    critical_events = FHBAtomicEvent.objects.filter(
+        phm=phm,
+        priority__in=['CRITICAL_HIGH', 'CRITICAL'],
+        event_timestamp__date=today
+    ).order_by('-event_timestamp')[:5]
+
+    for event in critical_events:
+        active_alerts.append({
+            'priority': event.priority,
+            'event_type_display': event.get_event_type_display(),
+            'infant_name': event.infant.full_name,
+            'phn': event.infant.phn,
+        })
+
+    # Unsynced count for sync status indicator
+    unsynced_count = FHBAtomicEvent.objects.filter(
+        phm=phm,
+        is_synced=False
+    ).count()
+
+    context = {
+        'title': 'BlueCradle - PHM Dashboard',
+        'total_registered': total_registered,
+        'new_this_month': new_this_month,
+        'vaccinations_due': vaccinations_due,
+        'overdue_count': overdue_count,
+        'at_risk_count': at_risk_count,
+        'next_clinic': next_clinic,
+        'recent_infants': recent_infants,
+        'active_alerts': active_alerts,
+        'unsynced_count': unsynced_count,
+    }
+
+    return render(
+        request, 
+        'clinic/dashboard.html', 
+        context
+    )
+
+
+@login_required
 def infant_register(request):
     if request.method == 'POST':
         phm = request.user.phm_profile
