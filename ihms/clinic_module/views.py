@@ -1,10 +1,16 @@
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent
+from .serializers import ClinicSessionSerializer, GrowthRecordSerializer
 from django.contrib.auth.decorators import login_required
 from infants_module.models import Infant
 from django.db import models
 from datetime import date
+from django.utils import timezone
+from accounts_module.permission import IsPHM
 
 @login_required
 def infant_register(request):
@@ -136,3 +142,111 @@ def infant_detail(request, phn):
         'immunization_events': immunization_events,
     }
     return render(request, 'clinic/infant_detail.html', context)
+
+@login_required
+def growth_record(request, phn):
+    phm = request.user.phm_profile
+    today = date.today()
+    infant = get_object_or_404(Infant, phn=phn, registered_phm=phm)
+
+    sessions = ClinicSession.objects.filter(
+        phm=phm
+    ).order_by('-session_date')[:10]
+
+    growth_records = GrowthRecord.objects.filter(
+        infant=infant
+    ).order_by('-visit_date')
+
+    if request.method == 'POST':
+        data = request.POST
+        age_in_days = (date.fromisoformat(data['visit_date']) - infant.date_of_birth).days
+
+        GrowthRecord.objects.create(
+            infant=infant,
+            session_id=data['session'],
+            visit_date=data['visit_date'],
+            age_in_days=age_in_days,
+            weight_kg=data['weight_kg'],
+            height_cm=data['height_cm'],
+            muac_mm=data.get('muac_mm') or None,
+            whz=data.get('whz') or None,
+            waz=data.get('waz') or None,
+            haz=data.get('haz') or None,
+            bilateral_pitting_oedema='bilateral_pitting_oedema' in data,
+        )
+        messages.success(request, "Growth record saved successfully.")
+        return redirect('clinic:infant_detail', phn=phn)
+
+    context = {
+        'title': 'BlueCradle - Add Growth Record',
+        'infant': infant,
+        'sessions': sessions,
+        'growth_records': growth_records,
+        'today': today,
+    }
+    return render(request, 'clinic/growth_record.html', context)
+
+class ClinicSessionListCreateView(APIView):
+    permission_classes = [IsPHM]
+
+    def get(self, request):
+        # Return all sessions belonging to the logged-in PHM.
+        sessions = ClinicSession.objects.filter(
+            phm=request.user.phm_profile
+        )
+        serializer = ClinicSessionSerializer(sessions, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ClinicSessionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(
+                phm=request.user.phm_profile,
+                moh_division=request.user.phm_profile.moh_division
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ClinicSessionDetailView(APIView):
+    permission_classes = [IsPHM]
+
+    def get_object(self, pk, request):
+        return get_object_or_404(
+            ClinicSession,
+            pk=pk,
+            phm=request.user.phm_profile
+        )
+
+    def get(self, request, pk):
+        session = self.get_object(pk, request)
+        serializer = ClinicSessionSerializer(session)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        session = self.get_object(pk, request)
+        serializer = ClinicSessionSerializer(session, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GrowthRecordListCreateView(APIView):
+    permission_classes = [IsPHM]
+
+    def get(self, request, phn):
+        # Return full growth history for one infant — feeds the chart.
+        records = GrowthRecord.objects.filter(
+            infant__phn=phn,
+            infant__registered_phm=request.user.phm_profile
+        ).order_by('visit_date')
+        serializer = GrowthRecordSerializer(records, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, phn):
+        serializer = GrowthRecordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
