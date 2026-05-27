@@ -4,13 +4,14 @@ from rest_framework.views import APIView
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent
-from .serializers import ClinicSessionSerializer, GrowthRecordSerializer, ImmunizationEventSerializer
+from .serializers import ClinicSessionSerializer, GrowthRecordSerializer, ImmunizationEventSerializer, FHBAtomicEventSerializer
 from django.contrib.auth.decorators import login_required
 from infants_module.models import Infant
 from django.db import models
 from datetime import date
 from django.utils import timezone
 from accounts_module.permission import IsPHM
+from .reporting_utils import generate_h523_data
 
 @login_required
 def infant_register(request):
@@ -226,12 +227,41 @@ def immunization(request, phn):
         return redirect('clinic:infant_detail', phn=phn)
 
     context = {
+        'title': 'BlueCradle - Add Immunization Event',
         'infant': infant,
         'sessions': sessions,
         'immunization_events': immunization_events,
         'vaccine_choices': ImmunizationEvent.VACCINE_CHOICES,
     }
     return render(request, 'clinic/immunization.html', context)
+
+@login_required
+def h523_report(request):
+    from datetime import datetime
+    from .reporting_utils import generate_h523_data
+
+    date_param = request.GET.get('date', None)
+    selected_date = date_param or str(date.today())
+
+    if date_param:
+        try:
+            target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        except ValueError:
+            target_date = date.today()
+    else:
+        target_date = date.today()
+
+    h523 = generate_h523_data(
+        phm=request.user.phm_profile,
+        target_date=target_date
+    )
+
+    context = {
+        'title': 'BlueCradle - H 523 Report',
+        'h523': h523,
+        'selected_date': selected_date,
+    }
+    return render(request, 'clinic/h523_report.html', context)
 
 class ClinicSessionListCreateView(APIView):
     permission_classes = [IsPHM]
@@ -340,3 +370,43 @@ class ImmunizationEventDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class FHBAtomicEventCreateView(APIView):
+    permission_classes = [IsPHM]
+
+    def post(self, request):
+        serializer = FHBAtomicEventSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(
+                phm=request.user.phm_profile,
+                moh_division=request.user.phm_profile.moh_division
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class H523ReportView(APIView):
+    permission_classes = [IsPHM]
+
+    def get(self, request):
+        # Optional date parameter — defaults to today.
+        # Allows PHM to regenerate a previous day's return if needed.
+        from datetime import datetime
+        date_param = request.query_params.get('date', None)
+
+        if date_param:
+            try:
+                target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid date format. Use YYYY-MM-DD."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            target_date = None
+
+        h523_data = generate_h523_data(
+            phm=request.user.phm_profile,
+            target_date=target_date
+        )
+        return Response(h523_data, status=status.HTTP_200_OK)

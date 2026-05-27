@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ClinicSession, GrowthRecord, ImmunizationEvent
+from .models import ClinicSession, GrowthRecord, ImmunizationEvent, FHBAtomicEvent
 from .zscore_utils import classify_who, get_grace_period_days, is_defaulter
 from datetime import date
 
@@ -171,3 +171,30 @@ class ImmunizationEventSerializer(serializers.ModelSerializer):
             validated_data['defaulter_days_overdue'] = max(0, days_overdue - grace_period)
 
         return super().create(validated_data)
+    
+class FHBAtomicEventSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FHBAtomicEvent
+        fields = [
+            'id',
+            'infant',
+            'session',
+            'phm',
+            'moh_division',
+            'event_type',
+            'fhb_service_code',
+            'priority',
+            'payload_json',
+            'event_timestamp',
+            'is_synced',
+            'synced_at',
+            'created_at',
+        ]
+        read_only_fields = [
+            'phm',
+            'moh_division',
+            'is_synced',
+            'synced_at',
+            'created_at',
+        ]
