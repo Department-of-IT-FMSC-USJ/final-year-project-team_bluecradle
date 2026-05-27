@@ -1,0 +1,106 @@
+{% extends 'clinic_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+    <!-- Top Nav -->
+    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'clinic:dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-xl font-extrabold text-primary font-headline">Infant Profiles</h2>
+                <p class="text-xs text-on-surface-variant font-medium">{{ total_count }} registered infants</p>
+            </div>
+        </div>
+        <a href="{% url 'clinic:infant_register' %}">
+            <button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
+                <span class="material-symbols-outlined text-lg">add</span>
+                New Infant Record
+            </button>
+        </a>
+    </header>
+
+    <div class="p-8 space-y-6">
+
+        <!-- Search Bar -->
+        <form method="GET" action="{% url 'clinic:infant_search' %}">
+            <div class="relative max-w-md">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+                <input type="text" name="q" value="{{ query }}"
+                    class="pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none w-full"
+                    placeholder="Search by PHN or name...">
+            </div>
+        </form>
+
+        <!-- Infant List Table -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
+                            <th class="px-6 py-3">Infant Name / PHN</th>
+                            <th class="px-6 py-3">Age</th>
+                            <th class="px-6 py-3">Sex</th>
+                            <th class="px-6 py-3">Last Visit</th>
+                            <th class="px-6 py-3">Growth Status</th>
+                            <th class="px-6 py-3">ML Risk</th>
+                            <th class="px-6 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for item in infants %}
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-on-surface">{{ item.infant.full_name }}</span>
+                                    <span class="text-[10px] font-medium text-on-surface-variant">{{ item.infant.phn }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium">{{ item.age_display }}</td>
+                            <td class="px-6 py-4 text-sm">{{ item.infant.get_sex_display }}</td>
+                            <td class="px-6 py-4 text-sm">{{ item.last_visit|date:"d M Y"|default:"No visits" }}</td>
+                            <td class="px-6 py-4">
+                                {% if item.who_classification == 'SAM' %}
+                                    <span class="bg-error-container text-error text-[10px] font-bold px-2 py-1 rounded-full uppercase">SAM Risk</span>
+                                {% elif item.who_classification == 'MAM' %}
+                                    <span class="bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold px-2 py-1 rounded-full uppercase">MAM Risk</span>
+                                {% else %}
+                                    <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-1 rounded-full uppercase">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if item.ml_risk == 'SAM' %}
+                                    <span class="bg-error text-white text-[10px] font-bold px-2 py-1 rounded border border-error">HIGH RISK</span>
+                                {% elif item.ml_risk == 'MAM' %}
+                                    <span class="bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold px-2 py-1 rounded border border-tertiary-fixed-dim/40">MAM RISK</span>
+                                {% else %}
+                                    <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">LOW RISK</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{% url 'clinic:infant_detail' item.infant.phn %}">
+                                    <button class="p-1 hover:bg-surface-container-high rounded-full">
+                                        <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+                                    </button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center text-sm text-on-surface-variant">
+                                {% if query %}
+                                    No infants found for "{{ query }}".
+                                {% else %}
+                                    No infants registered yet.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

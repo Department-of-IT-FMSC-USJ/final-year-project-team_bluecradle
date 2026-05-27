@@ -24,6 +24,9 @@ urlpatterns = [
 
     path('infants/', include('infants_module.urls', namespace='infants')),
     path('api/infants/', include('infants_module.urls', namespace='infants')),
+
+    path('clinic/', include('clinic_module.urls', namespace='clinic')),
+    path('api/clinic/', include('clinic_module.urls', namespace='clinic')),
 ]
 
 # Fallback pages

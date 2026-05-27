@@ -1,0 +1,22 @@
+{
+  "name": "BlueCradle — Infant Health Monitoring",
+  "short_name": "BlueCradle",
+  "description": "Offline-first infant health monitoring for Sri Lanka's PHM workflow",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

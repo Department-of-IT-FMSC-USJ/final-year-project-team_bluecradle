@@ -1,0 +1,226 @@
+{% extends 'clinic_module/sub_base.html' %}
+
+{% block body_content %}
+<!-- TopNavBar (Authority: JSON & Design System) -->
+<header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center gap-6">
+<div>
+<h2 class="text-xl font-extrabold text-primary font-headline">Dashboard</h2>
+<p class="text-xs text-on-surface-variant font-medium">{{ today|date:"l, d F Y" }}</p>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search PHN or Name..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-secondary-container/30 rounded-full border border-secondary-container/50">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="sync">sync</span>
+<span class="text-[11px] font-bold text-on-secondary-container">
+    {% if unsynced_count > 0 %}
+        {{ unsynced_count }} pending
+    {% else %}
+        All synced
+    {% endif %}
+</span>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<a href="{% url 'clinic:infant_register' %}">
+<button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                    New Infant Record
+                </button></a>
+</div>
+</header>
+<div class="p-8 flex gap-8">
+<!-- Left Canvas (Stats & Table) -->
+<div class="flex-1 space-y-8">
+<!-- Stat Cards Grid -->
+<div class="grid grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10 shadow-sm">
+<p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Registered</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-extrabold text-primary font-headline">{{ total_registered }}</h3>
+<span class="text-[10px] font-bold text-secondary">+{{ new_this_month }} this month</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="warning">warning</span>
+</div>
+<p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Vaccinations Due</p>
+<h3 class="text-3xl font-extrabold text-primary font-headline">{{ vaccinations_due }}</h3>
+<div class="mt-1 flex items-center gap-1">
+<span class="text-[10px] font-bold text-error px-1.5 py-0.5 bg-error-container rounded">{{ overdue_count }} overdue</span>
+
+</div>
+</div>
+<div class="bg-error-container/30 p-5 rounded-xl border border-error-container/50 shadow-sm relative">
+<p class="text-[11px] font-bold text-error uppercase tracking-widest mb-1">SAM/MAM Risk</p>
+<h3 class="text-3xl font-extrabold text-error font-headline">{{ at_risk_count }}</h3>
+<p class="text-[10px] font-bold text-on-error-container mt-1 uppercase">Immediate attention</p>
+</div>
+<div class="bg-primary p-5 rounded-xl shadow-md relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-8xl" data-icon="calendar_today">calendar_today</span>
+</div>
+<p class="text-[11px] font-bold text-on-primary-container uppercase tracking-widest mb-1">Next Clinic</p>
+<h3 class="text-3xl font-extrabold text-white font-headline">{{ next_clinic.expected_count|default:"—" }}</h3>
+<p class="text-[10px] font-bold text-primary-fixed-dim mt-1">{{ next_clinic.session_date|date:"d M Y"|default:"Not scheduled" }}</p>
+</div>
+</div>
+<!-- Recent Infant Records Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10">
+<div class="px-6 py-5 flex justify-between items-center">
+<h3 class="text-lg font-bold text-primary font-headline">Recent Infant Records</h3>
+<a href="{% url 'clinic:infant_search' %}" class="text-xs font-bold text-secondary flex items-center gap-1 hover:underline">
+    View All <span class="material-symbols-outlined text-xs">chevron_right</span>
+</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
+<th class="px-6 py-3">Infant Name/PHN</th>
+<th class="px-6 py-3">Age</th>
+<th class="px-6 py-3">Last Visit</th>
+<th class="px-6 py-3">Growth Status</th>
+<th class="px-6 py-3">ML Risk Assessment</th>
+<th class="px-6 py-3">Next Vaccine</th>
+<th class="px-6 py-3"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+{% for item in recent_infants %}
+<tr class="hover:bg-surface-container transition-colors">
+    <td class="px-6 py-4">
+        <div class="flex flex-col">
+            <span class="text-sm font-bold text-on-surface">{{ item.infant.full_name }}</span>
+            <span class="text-[10px] font-medium text-on-surface-variant">{{ item.infant.phn }}</span>
+        </div>
+    </td>
+    <td class="px-6 py-4 text-sm font-medium">{{ item.age_display }}</td>
+    <td class="px-6 py-4 text-sm">{{ item.last_visit|date:"d M Y"|default:"No visits" }}</td>
+    <td class="px-6 py-4">
+        {% if item.who_classification == 'SAM' %}
+            <span class="bg-error-container text-error text-[10px] font-bold px-2 py-1 rounded-full uppercase">SAM Risk</span>
+        {% elif item.who_classification == 'MAM' %}
+            <span class="bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold px-2 py-1 rounded-full uppercase">MAM Risk</span>
+        {% else %}
+            <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-1 rounded-full uppercase">Normal</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4">
+        {% if item.ml_risk == 'SAM' %}
+            <span class="bg-error text-white text-[10px] font-bold px-2 py-1 rounded border border-error">HIGH RISK</span>
+        {% elif item.ml_risk == 'MAM' %}
+            <span class="bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold px-2 py-1 rounded border border-tertiary-fixed-dim/40">MAM RISK</span>
+        {% else %}
+            <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">LOW RISK</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 text-sm font-medium">{{ item.next_vaccine|default:"—" }}</td>
+    <td class="px-6 py-4">
+        <a href="{% url 'clinic:infant_detail' item.infant.phn %}">
+            <button class="p-1 hover:bg-surface-container-high rounded-full">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+            </button>
+        </a>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="7" class="px-6 py-8 text-center text-sm text-on-surface-variant">No infants registered yet.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Sidebar Panel -->
+<div class="w-80 space-y-6">
+<!-- Clinic Summary Card -->
+<div class="bg-[#1A3A5C] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary-container" data-icon="event">event</span>
+<h4 class="text-sm font-bold uppercase tracking-widest text-on-primary-container">Next Clinic</h4>
+</div>
+<p class="text-2xl font-extrabold font-headline mb-1">
+    {{ next_clinic.session_date|date:"d M Y"|default:"Not scheduled" }}
+</p>
+<p class="text-sm text-primary-fixed-dim font-medium mb-6">
+    {{ next_clinic.location|default:"—" }}
+</p>
+<div class="flex justify-between items-center py-3 border-t border-white/10">
+    <span class="text-sm opacity-80">Expected Infants</span>
+    <span class="text-xl font-bold">{{ next_clinic.expected_count|default:"—" }}</span>
+</div>
+<div class="flex justify-between items-center py-3 border-t border-white/10">
+<span class="text-sm opacity-80">Vaccines Ready</span>
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Abstract Background Pattern -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+</div>
+<!-- Active Alerts List -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/10">
+<h4 class="text-sm font-bold text-primary mb-5 uppercase tracking-widest flex items-center justify-between">
+                        Active Alerts
+                        <span class="bg-error-container text-error text-[10px] px-2 py-0.5 rounded-full">{{ active_alerts|length }} NEW</span>
+</h4>
+<ul class="space-y-4">
+{% for alert in active_alerts %}
+<li class="flex gap-4">
+    <div class="mt-1 w-2 h-2 rounded-full 
+        {% if alert.priority == 'CRITICAL_HIGH' %}bg-error
+        {% elif alert.priority == 'CRITICAL' %}bg-tertiary-fixed-dim
+        {% else %}bg-secondary{% endif %} shrink-0">
+    </div>
+    <div>
+        <p class="text-xs font-bold text-on-surface">{{ alert.event_type_display }}</p>
+        <p class="text-[11px] text-on-surface-variant">{{ alert.infant_name }} ({{ alert.phn }})</p>
+    </div>
+</li>
+{% empty %}
+<li class="text-xs text-on-surface-variant">No active alerts.</li>
+{% endfor %}
+</ul>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Chat Assistant -->
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+<div class="bg-white shadow-2xl rounded-2xl w-80 border border-outline-variant/10 hidden md:block overflow-hidden">
+<div class="bg-secondary p-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<p class="text-sm font-bold text-white leading-none">BlueCradle Assistant</p>
+<p class="text-[10px] text-secondary-container">Clinical Protocol Guide</p>
+</div>
+</div>
+<div class="p-4 bg-surface">
+<div class="bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-3">
+                    How can I assist you with clinical guidelines or SAM protocols today?
+                </div>
+<div class="relative">
+<input class="w-full pl-4 pr-10 py-2.5 rounded-xl border-none bg-surface-container-lowest text-xs focus:ring-2 focus:ring-secondary/20 shadow-inner" placeholder="Ask a clinical question…" type="text">
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-secondary">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</div>
+<button class="w-14 h-14 bg-secondary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="chat">chat</span>
+</button>
+</div>
+{% endblock %}
