@@ -1,8 +1,7 @@
-{% load static %}
 {% extends 'clinic_module/sub_base.html' %}
+{% load static %}
 
 {% block body_content %}
-<main class="ml-72 flex-1 flex flex-col">
     <!-- Top Nav -->
     <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
         <div class="flex items-center gap-4">
@@ -219,6 +218,30 @@ new Chart(sparkCtx, {
             x: { ticks: { font: { size: 9 } } }
         }
     }
+});
+</script>
+
+<script src="{% static 'js/zscore.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const weightInput = document.querySelector('input[name="weight_kg"]');
+    const heightInput = document.querySelector('input[name="height_cm"]');
+    const whzInput   = document.querySelector('input[name="whz"]');
+
+    const sex = "{{ infant.sex }}";
+
+    function updateZScores() {
+        const weight = parseFloat(weightInput.value);
+        const height = parseFloat(heightInput.value);
+
+        if (!weight || !height) return;
+
+        const whz = BlueCradleZScore.calculateWHZ(weight, height, sex);
+        if (whz !== null) whzInput.value = whz;
+    }
+
+    weightInput.addEventListener('input', updateZScores);
+    heightInput.addEventListener('input', updateZScores);
 });
 </script>
 {% endblock %}

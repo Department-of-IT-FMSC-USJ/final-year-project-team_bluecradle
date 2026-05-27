@@ -189,30 +189,26 @@ def register_moh(request):
     })
 
 def user_login(request):
-    if request.user.is_authenticated:
+    if request.method == 'GET' and request.user.is_authenticated:
         return role_redirect(request)
 
     if request.method == 'POST':
-        # Handle role selection POST from multi-role screen
+        print(f"DEBUG user_login POST data: {request.POST}")
         if 'role' in request.POST:
             return select_session_role(request)
         
-        # Handle login form POST
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
             return role_redirect(request)
         else:
-            messages.error(
-                request, 
-                'Invalid email or password.'
-            )
+            messages.error(request, 'Invalid email or password.')
     else:
         form = LoginForm(request)
 
     return render(
-        request, 
+        request,
         'accounts_module/login.html',
         {
             'form': form
@@ -260,7 +256,7 @@ def select_session_role(request):
 
 def redirect_to_dashboard(role):
     if role == UserRole.PHM:
-        return redirect('clinic:phm_dashboard')
+        return redirect('clinic:dashboard')
     elif role == UserRole.PARENT:
         return redirect('parent:dashboard')
     elif role == UserRole.MOH:

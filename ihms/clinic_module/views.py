@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import request, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib import messages
@@ -12,6 +12,7 @@ from datetime import date
 from django.utils import timezone
 from accounts_module.permission import IsPHM
 from .reporting_utils import generate_h523_data
+from ml_module.models import MLRiskAssessment
 
 @login_required
 def phm_dashboard(request):
@@ -118,11 +119,12 @@ def phm_dashboard(request):
         'recent_infants': recent_infants,
         'active_alerts': active_alerts,
         'unsynced_count': unsynced_count,
+        'today': timezone.now(),
     }
 
     return render(
         request, 
-        'clinic/dashboard.html', 
+        'clinic_module/dashboard.html', 
         context
     )
 
@@ -152,11 +154,11 @@ def infant_register(request):
             moh_division=phm.moh_division,
         )
         messages.success(request, f"Infant {data['full_name']} registered successfully.")
-        return redirect('clinic:phm_dashboard')
+        return redirect('clinic:dashboard')
 
     return render(
         request,
-        'clinic/infant_register.html',
+        'clinic_module/infant_register.html',
         {
             'title': 'BLueCradle - Infant Registration',
         }
@@ -198,6 +200,15 @@ def infant_search(request):
             months = (age_days % 365) // 30
             age_display = f"{years}y {months}m"
 
+        risk_filter = request.GET.get('filter')
+        if risk_filter == 'risk':
+            # Sort SAM/MAM to top
+            infants = sorted(infants, key=lambda x: 
+                0 if x['who_classification'] == 'SAM' 
+                else 1 if x['who_classification'] == 'MAM' 
+                else 2
+            )
+
         infants.append({
             'infant': infant,
             'age_display': age_display,
@@ -212,7 +223,7 @@ def infant_search(request):
         'total_count': all_infants.count(),
         'query': query,
     }
-    return render(request, 'clinic/infant_search.html', context)
+    return render(request, 'clinic_module/infant_search.html', context)
 
 @login_required
 def infant_detail(request, phn):
@@ -256,7 +267,7 @@ def infant_detail(request, phn):
         'latest_ml': latest_ml,
         'immunization_events': immunization_events,
     }
-    return render(request, 'clinic/infant_detail.html', context)
+    return render(request, 'clinic_module/infant_detail.html', context)
 
 @login_required
 def growth_record(request, phn):
@@ -299,7 +310,7 @@ def growth_record(request, phn):
         'growth_records': growth_records,
         'today': today,
     }
-    return render(request, 'clinic/growth_record.html', context)
+    return render(request, 'clinic_module/growth_record.html', context)
 
 @login_required
 def immunization(request, phn):
@@ -347,7 +358,7 @@ def immunization(request, phn):
         'immunization_events': immunization_events,
         'vaccine_choices': ImmunizationEvent.VACCINE_CHOICES,
     }
-    return render(request, 'clinic/immunization.html', context)
+    return render(request, 'clinic_module/immunization.html', context)
 
 @login_required
 def h523_report(request):
@@ -375,7 +386,7 @@ def h523_report(request):
         'h523': h523,
         'selected_date': selected_date,
     }
-    return render(request, 'clinic/h523_report.html', context)
+    return render(request, 'clinic_module/h523_report.html', context)
 
 class ClinicSessionListCreateView(APIView):
     permission_classes = [IsPHM]
@@ -438,14 +449,14 @@ class GrowthRecordListCreateView(APIView):
     def post(self, request, phn):
         serializer = GrowthRecordSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-
-            # Trigger ML risk assessment as background task.
-            from ml_module.tasks import run_ml_risk_assessment
-            run_ml_risk_assessment.delay(
-                infant_phn=phn,
-                growth_record_id=growth_record.id
-            )
+            saved_record = serializer.save()  
+            
+            # Temporarily commented out — requires Redis
+            # from ml_module.tasks import run_ml_risk_assessment
+            # run_ml_risk_assessment.delay(
+            #     infant_phn=phn,
+            #     growth_record_id=saved_record.id
+            # )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
