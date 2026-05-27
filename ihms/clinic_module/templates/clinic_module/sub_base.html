@@ -23,11 +23,11 @@
 </div>
 <nav class="flex-1 space-y-1 overflow-y-auto no-scrollbar">
 <!-- Dashboard (Active) -->
-<a class="flex items-center gap-3 bg-[#1A3A5C] text-white rounded-xl px-4 py-3 mx-2 transition-colors" href="#">
+<a class="flex items-center gap-3 bg-[#1A3A5C] text-white rounded-xl px-4 py-3 mx-2 transition-colors" href="{% url 'clinic:phm_dashboard' %}">
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
 <span class="font-medium">Dashboard</span>
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="#">
+<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:infant_search' %}">
 <span class="material-symbols-outlined" data-icon="child_care">child_care</span>
 <span class="font-medium">Infant Profiles</span>
 </a>

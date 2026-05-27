@@ -325,6 +325,14 @@ class GrowthRecordListCreateView(APIView):
         serializer = GrowthRecordSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+
+            # Trigger ML risk assessment as background task.
+            from ml_module.tasks import run_ml_risk_assessment
+            run_ml_risk_assessment.delay(
+                infant_phn=phn,
+                growth_record_id=growth_record.id
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
