@@ -2,36 +2,67 @@
 {% load static %}
 
 {% block body_content %}
-    <!-- Top Nav -->
-    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'clinic:dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-            </a>
-            <div>
-                <h2 class="text-xl font-extrabold text-primary font-headline">Daily Work Return — H 523</h2>
-                <p class="text-xs text-on-surface-variant font-medium">{{ h523.report_date }}</p>
-            </div>
+<div class="p-8 max-w-[1600px]">
+    <div class="flex items-center gap-4">
+        <div>
+            <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+                <a href="{% url 'clinic:dashboard' %}" class="hover:text-primary">Dashboard</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <span class="text-primary font-semibold">H 523 Report</span>
+            </nav>
+            <h2 class="text-xl font-extrabold text-primary font-headline">Daily Work Return — H 523</h2>
+            <p class="text-xs text-on-surface-variant font-medium">{{ h523.report_date }}</p>
         </div>
-        <div class="flex items-center gap-3">
-            <!-- Date picker for regenerating past reports -->
-            <form method="GET" action="{% url 'clinic:h523_report' %}" class="flex items-center gap-2">
-                <input type="date" name="date" value="{{ selected_date }}"
-                    class="px-3 py-2 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
-                <button type="submit"
-                    class="px-4 py-2 rounded-xl border border-secondary text-secondary text-sm font-bold hover:bg-secondary/10 transition-colors">
-                    Load
-                </button>
-            </form>
-            <button onclick="window.print()"
-                class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
-                <span class="material-symbols-outlined text-lg">download</span>
-                Download / Print
-            </button>
-        </div>
-    </header>
+    </div>
 
-    <div class="p-8 space-y-6">
+    <div class="grid grid-cols-4 gap-4 p-8">
+        <!-- H 523 — Active -->
+        <div onclick="switchReport('h523')" id="card-h523"
+            class="report-card bg-surface-container-lowest p-5 rounded-xl border-2 border-secondary shadow-sm flex flex-col cursor-pointer transition-all">
+            <div class="w-10 h-10 bg-secondary-container text-secondary rounded-lg flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined">receipt_long</span>
+            </div>
+            <h4 class="font-bold text-on-surface mb-1">Daily Statement</h4>
+            <p class="text-xs text-on-surface-variant mb-4 flex-1">H 523 — Automated daily clinical return.</p>
+            <span id="badge-h523" class="w-full py-2 bg-secondary text-white text-xs font-bold rounded-xl text-center block">Active</span>
+        </div>
+
+        <!-- Defaulter List -->
+        <div onclick="switchReport('defaulters')" id="card-defaulters"
+            class="report-card bg-surface-container-lowest p-5 rounded-xl border-2 border-transparent shadow-sm flex flex-col cursor-pointer transition-all hover:border-error/30 relative">
+            <div class="absolute top-3 right-3 bg-error-container text-error text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                {{ overdue_count }} DEFAULTERS
+            </div>
+            <div class="w-10 h-10 bg-error-container text-error rounded-lg flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined">person_off</span>
+            </div>
+            <h4 class="font-bold text-on-surface mb-1">Defaulter List</h4>
+            <p class="text-xs text-on-surface-variant mb-4 flex-1">Infants missing scheduled vaccinations.</p>
+            <span id="badge-defaulters" class="w-full py-2 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-xl text-center block">Select</span>
+        </div>
+
+        <!-- H 527 — Future -->
+        <div class="bg-surface-container-low p-5 rounded-xl border border-transparent opacity-70 flex flex-col">
+            <div class="w-10 h-10 bg-surface-container-highest text-on-surface-variant rounded-lg flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined">summarize</span>
+            </div>
+            <h4 class="font-bold text-on-surface-variant mb-1">Clinic Summary</h4>
+            <p class="text-xs text-on-surface-variant/60 mb-4 flex-1">H 527 — Consolidated session outcomes.</p>
+            <button class="w-full py-2 bg-surface-container-highest text-on-surface-variant/40 text-xs font-bold rounded-xl cursor-not-allowed" disabled>Future Release</button>
+        </div>
+
+        <!-- H 524 — Future -->
+        <div class="bg-surface-container-low p-5 rounded-xl border border-transparent opacity-70 flex flex-col">
+            <div class="w-10 h-10 bg-surface-container-highest text-on-surface-variant rounded-lg flex items-center justify-center mb-3">
+                <span class="material-symbols-outlined">calendar_month</span>
+            </div>
+            <h4 class="font-bold text-on-surface-variant mb-1">Monthly Statement</h4>
+            <p class="text-xs text-on-surface-variant/60 mb-4 flex-1">H 524 — End-of-month regional submission.</p>
+            <button class="w-full py-2 bg-surface-container-highest text-on-surface-variant/40 text-xs font-bold rounded-xl cursor-not-allowed" disabled>Future Release</button>
+        </div>
+    </div>
+
+    <div id="report-h523" class="p-8 pt-0 space-y-6">
 
         <!-- Report Header Info -->
         <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
@@ -155,7 +186,57 @@
         </div>
 
     </div>
-</main>
+
+    <!-- Defaulter List Section -->
+    <div id="report-defaulters" class="p-8 pt-0 mb-0 hidden">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center">
+                <h3 class="text-sm font-bold text-error uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-error">person_off</span>
+                    Defaulter List — {{ h523.report_date }}
+                </h3>
+                <span class="bg-error-container text-error text-[10px] font-bold px-3 py-1 rounded-full">
+                    {{ overdue_count }} DEFAULTERS
+                </span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
+                            <th class="px-6 py-3">Infant Name</th>
+                            <th class="px-6 py-3">PHN</th>
+                            <th class="px-6 py-3">Vaccine Missed</th>
+                            <th class="px-6 py-3">Scheduled Date</th>
+                            <th class="px-6 py-3">Days Overdue</th>
+                            <th class="px-6 py-3">Grace Period</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for d in defaulters %}
+                        <tr class="hover:bg-surface-container transition-colors">
+                            <td class="px-6 py-4 text-sm font-bold text-on-surface">{{ d.infant.full_name }}</td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant">{{ d.infant.phn }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-primary">{{ d.get_vaccine_display }}</td>
+                            <td class="px-6 py-4 text-sm">{{ d.scheduled_date|date:"d M Y"|default:"—" }}</td>
+                            <td class="px-6 py-4">
+                                <span class="bg-error-container text-error text-[10px] font-bold px-2 py-1 rounded-full">
+                                    {{ d.defaulter_days_overdue }} days
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-on-surface-variant">{{ d.grace_period_days }} days</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-sm text-on-surface-variant">No defaulters found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <!-- Print styles -->
 <style>
@@ -164,5 +245,36 @@
         main { margin-left: 0 !important; }
     }
 </style>
+
+<script>
+function switchReport(type) {
+    // Hide all content
+    document.getElementById('report-h523').classList.add('hidden');
+    document.getElementById('report-defaulters').classList.add('hidden');
+
+    // Reset all cards
+    document.getElementById('card-h523').className = 'report-card bg-surface-container-lowest p-5 rounded-xl border-2 border-transparent shadow-sm flex flex-col cursor-pointer transition-all';
+    document.getElementById('card-defaulters').className = 'report-card bg-surface-container-lowest p-5 rounded-xl border-2 border-transparent shadow-sm flex flex-col cursor-pointer transition-all relative';
+
+    // Reset badges
+    document.getElementById('badge-h523').className = 'w-full py-2 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-xl text-center block';
+    document.getElementById('badge-h523').textContent = 'Select';
+    document.getElementById('badge-defaulters').className = 'w-full py-2 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-xl text-center block';
+    document.getElementById('badge-defaulters').textContent = 'Select';
+
+    // Activate selected
+    document.getElementById('report-' + type).classList.remove('hidden');
+
+    if (type === 'h523') {
+        document.getElementById('card-h523').className = 'report-card bg-surface-container-lowest p-5 rounded-xl border-2 border-secondary shadow-sm flex flex-col cursor-pointer transition-all';
+        document.getElementById('badge-h523').className = 'w-full py-2 bg-secondary text-white text-xs font-bold rounded-xl text-center block';
+        document.getElementById('badge-h523').textContent = 'Active';
+    } else if (type === 'defaulters') {
+        document.getElementById('card-defaulters').className = 'report-card bg-surface-container-lowest p-5 rounded-xl border-2 border-error shadow-sm flex flex-col cursor-pointer transition-all relative';
+        document.getElementById('badge-defaulters').className = 'w-full py-2 bg-error text-white text-xs font-bold rounded-xl text-center block';
+        document.getElementById('badge-defaulters').textContent = 'Active';
+    }
+}
+</script>
 
 {% endblock %}

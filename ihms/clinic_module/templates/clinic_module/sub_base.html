@@ -23,20 +23,19 @@
 <p class="text-xs font-medium text-slate-500 tracking-wider">PHM Management</p>
 </div>
 <nav class="flex-1 space-y-1 overflow-y-auto no-scrollbar">
-<!-- Dashboard (Active) -->
-<a class="flex items-center gap-3 bg-[#1A3A5C] text-white rounded-xl px-4 py-3 mx-2 transition-colors" href="{% url 'clinic:dashboard' %}">
+<a data-nav="dashboard" class="flex items-center gap-3 text-slate-600 rounded-xl px-4 py-3 mx-2 transition-colors hover:bg-slate-200" href="{% url 'clinic:dashboard' %}">
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
 <span class="font-medium">Dashboard</span>
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:infant_search' %}">
+<a data-nav="infants" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:infant_search' %}">
 <span class="material-symbols-outlined" data-icon="child_care">child_care</span>
 <span class="font-medium">Infant Profiles</span>
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:infant_search' %}?filter=risk">
+<a data-nav="growth" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:infant_search' %}?filter=risk">
 <span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
 <span class="font-medium">Growth Monitoring</span>
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="#">
+<a data-nav="vaccinations" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="#">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="vaccines">vaccines</span>
 <span class="font-medium">Vaccinations</span>
@@ -45,11 +44,11 @@
 <span class="bg-error text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ overdue_count }}</span>
 {% endif %}
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="#">
+<a data-nav="sessions" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:session_start' %}">
 <span class="material-symbols-outlined" data-icon="event_note">event_note</span>
 <span class="font-medium">Clinic Sessions</span>
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="#">
+<a data-nav="alerts" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="#">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 <span class="font-medium">Alerts</span>
@@ -58,7 +57,7 @@
 <span class="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ active_alerts|length }}</span>
 {% endif %}
 </a>
-<a class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:h523_report' %}">
+<a data-nav="reports" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl" href="{% url 'clinic:h523_report' %}">
 <span class="material-symbols-outlined" data-icon="assessment">assessment</span>
 <span class="font-medium">Reports</span>
 </a>
@@ -67,19 +66,13 @@
 <div class="mt-auto px-4">
 <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm">
 <div class="flex items-center gap-3 mb-2">
-<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary overflow-hidden">
-<img alt="PHM Profile" class="w-full h-full object-cover" data-alt="Portrait of a female public health worker" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoYcJmoIw3CUIg_Km0Xu4d0xfVZQPPJai_37GHRXKpyOvZYSxcksButwPWJWAlpIB8aapMdx3ibVTd61e-DtlViUMfPMTTGb4ErckqbRo9ZVFxnMHa81GkozZWWMYNm9t8lxfWJy3_7aDn9BvjxvEIPPBu4K36j3bOc6R7IZBASgoqpIbG21m27UwehMkQ9S07SzU7oOEtXpACNcIqulAl-Ci2PqpJ55-qgCstEqUIh_TFwHdiiVFWe_CHP5SVIrCAiXzEQRqmnAJb">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
+    {{ request.user.phm_profile.full_name|slice:":1"|upper }}
 </div>
 <div>
 <p class="font-bold text-sm text-on-surface">{{ request.user.phm_profile.full_name|upper }}</p>
 <p class="text-xs text-on-surface-variant">MOH Division: {{ request.user.phm_profile.moh_division }}</p>
 </div>
-</div>
-<div class="flex items-center gap-1.5">
-    <div class="w-2 h-2 rounded-full {% if unsynced_count > 0 %}bg-error{% else %}bg-secondary{% endif %}"></div>
-    <span class="text-[11px] font-semibold {% if unsynced_count > 0 %}text-error{% else %}text-secondary{% endif %} uppercase tracking-tight">
-        {% if unsynced_count > 0 %}{{ unsynced_count }} pending{% else %}Synced{% endif %}
-    </span>
 </div>
 </div>
 <div class="px-4 mt-2">
@@ -89,12 +82,72 @@
         <span class="font-medium text-sm">Logout</span>
     </a>
 </div>
+</div>
 </aside>
+
+<!-- Floating Sync Status Bar -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
+            bg-white/80 backdrop-blur-xl border border-white/40 
+            px-6 py-3 rounded-full flex items-center gap-4 shadow-2xl">
+    <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full {% if unsynced_count > 0 %}bg-error animate-pulse{% else %}bg-secondary{% endif %}"></span>
+        <span class="text-xs font-bold text-primary">
+            {% if unsynced_count > 0 %}{{ unsynced_count }} Records Pending{% else %}System Online{% endif %}
+        </span>
+    </div>
+    <div class="h-4 w-[1px] bg-outline-variant"></div>
+    <p class="text-[10px] text-on-surface-variant font-medium">Last synced just now</p>
+    <div class="h-4 w-[1px] bg-outline-variant"></div>
+    <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-sm text-secondary" id="connectivity-icon">wifi</span>
+        <span class="text-[10px] font-bold text-secondary uppercase" id="connectivity-label">Online</span>
+    </div>
+</div>
+
 <!-- Main Content Area -->
 <main class="ml-72 flex-1 flex flex-col">
 {% block body_content %}
 {% endblock %}
 
 <script type="module" src="{% static 'js/app.js' %}"></script>
+
+<script>
+window.addEventListener('offline', () => {
+    document.getElementById('connectivity-icon').textContent = 'wifi_off';
+    document.getElementById('connectivity-label').textContent = 'Offline';
+    document.getElementById('connectivity-label').classList.replace('text-secondary', 'text-error');
+    document.getElementById('connectivity-icon').classList.replace('text-secondary', 'text-error');
+});
+window.addEventListener('online', () => {
+    document.getElementById('connectivity-icon').textContent = 'wifi';
+    document.getElementById('connectivity-label').textContent = 'Online';
+    document.getElementById('connectivity-label').classList.replace('text-error', 'text-secondary');
+    document.getElementById('connectivity-icon').classList.replace('text-error', 'text-secondary');
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const activeNav = "{{ active_nav }}";
+    const navLinks = document.querySelectorAll('nav a[data-nav]');
+
+    navLinks.forEach(link => {
+        // Reset all to default
+        link.style.backgroundColor = '';
+        link.style.color = '';
+        link.classList.remove('text-white');
+        link.classList.add('text-slate-600');
+
+        // Highlight active
+        if (link.getAttribute('data-nav') === activeNav) {
+            link.style.backgroundColor = '#1A3A5C';
+            link.style.color = 'white';
+            link.classList.remove('text-slate-600');
+            link.classList.add('text-white');
+        }
+    });
+});
+</script>
+
 </body>
 {% endblock %}
