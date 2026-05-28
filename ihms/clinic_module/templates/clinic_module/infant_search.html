@@ -2,24 +2,17 @@
 {% load static %}
 
 {% block body_content %}
+<div class="p-8 max-w-[1600px]">
     <!-- Top Nav -->
-    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'clinic:dashboard' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-            </a>
-            <div>
-                <h2 class="text-xl font-extrabold text-primary font-headline">Infant Profiles</h2>
-                <p class="text-xs text-on-surface-variant font-medium">{{ total_count }} registered infants</p>
-            </div>
-        </div>
-        <a href="{% url 'clinic:infant_register' %}">
-            <button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
-                <span class="material-symbols-outlined text-lg">add</span>
-                New Infant Record
-            </button>
-        </a>
-    </header>
+    <div>
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'clinic:dashboard' %}" class="hover:text-primary">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Infant Profiles</span>
+        </nav>
+        <h2 class="text-xl font-extrabold text-primary font-headline">Infant Profiles</h2>
+        <p class="text-xs text-on-surface-variant font-medium">{{ total_count }} registered infants</p>
+    </div>
 
     <div class="p-8 space-y-6">
 
@@ -102,5 +95,5 @@
             </div>
         </div>
     </div>
-</main>
+</div>
 {% endblock %}

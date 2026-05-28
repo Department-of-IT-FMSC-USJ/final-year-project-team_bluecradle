@@ -2,167 +2,209 @@
 {% load static %}
 
 {% block body_content %}
-    <!-- Top Nav -->
-    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'clinic:infant_search' %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-            </a>
-            <div>
-                <h2 class="text-xl font-extrabold text-primary font-headline">{{ infant.full_name }}</h2>
-                <p class="text-xs text-on-surface-variant font-medium">{{ infant.phn }}</p>
-            </div>
+<div class="p-8 max-w-[1600px]">
+      <!-- Breadcrumb + Actions -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+                <a href="{% url 'clinic:infant_search' %}" class="hover:text-primary transition-colors">Infant Profiles</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <span class="text-primary font-semibold">{{ infant.full_name }}</span>
+            </nav>
+            <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">{{ infant.full_name }}</h1>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex gap-3">
             <a href="{% url 'clinic:growth_record' infant.phn %}">
-                <button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
-                    <span class="material-symbols-outlined text-lg">monitor_weight</span>
+                <button class="flex items-center gap-2 px-6 py-3 rounded-xl bg-secondary text-white font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
+                    <span class="material-symbols-outlined">monitor_weight</span>
                     Add Measurement
                 </button>
             </a>
             <a href="{% url 'clinic:immunization' infant.phn %}">
-                <button class="border border-secondary text-secondary px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all hover:bg-secondary/10">
-                    <span class="material-symbols-outlined text-lg">vaccines</span>
+                <button class="flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-secondary text-secondary font-bold hover:bg-secondary/5 transition-all">
+                    <span class="material-symbols-outlined">vaccines</span>
                     Record Vaccine
                 </button>
             </a>
         </div>
-    </header>
+    </div>
 
-    <div class="p-8 space-y-6">
-        <div class="grid grid-cols-3 gap-6">
+    <!-- Profile Header Bento -->
+    <div class="grid grid-cols-12 gap-6 mb-8">
 
-            <!-- Left Column — Profile + ML Risk -->
-            <div class="space-y-6">
-
-                <!-- Profile Card -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
-                    <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Profile</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">Date of Birth</span>
-                            <span class="text-xs font-bold text-on-surface">{{ infant.date_of_birth|date:"d M Y" }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">Age</span>
-                            <span class="text-xs font-bold text-on-surface">{{ age_display }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">Sex</span>
-                            <span class="text-xs font-bold text-on-surface">{{ infant.get_sex_display }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">Birth Order</span>
-                            <span class="text-xs font-bold text-on-surface">{{ infant.birth_order }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">Birth Weight</span>
-                            <span class="text-xs font-bold text-on-surface">{{ infant.birth_weight_kg }} kg</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">Birth Length</span>
-                            <span class="text-xs font-bold text-on-surface">{{ infant.birth_length_cm }} cm</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-on-surface-variant">MOH Division</span>
-                            <span class="text-xs font-bold text-on-surface">{{ infant.moh_division }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ML Risk Card -->
-                <div class="rounded-2xl p-6 shadow-sm border
-                    {% if latest_ml.risk_level == 'SAM' %}bg-error-container/30 border-error-container/50
-                    {% elif latest_ml.risk_level == 'MAM' %}bg-tertiary-fixed-dim/10 border-tertiary-fixed-dim/30
-                    {% else %}bg-secondary-container/20 border-secondary-container/30{% endif %}">
-                    <h3 class="text-sm font-bold uppercase tracking-widest mb-4
-                        {% if latest_ml.risk_level == 'SAM' %}text-error
-                        {% elif latest_ml.risk_level == 'MAM' %}text-on-tertiary-fixed-variant
-                        {% else %}text-secondary{% endif %}">
-                        ML Risk Assessment
-                    </h3>
-                    {% if latest_ml %}
-                    <p class="text-2xl font-extrabold font-headline
-                        {% if latest_ml.risk_level == 'SAM' %}text-error
-                        {% elif latest_ml.risk_level == 'MAM' %}text-on-tertiary-fixed-variant
-                        {% else %}text-secondary{% endif %}">
-                        {{ latest_ml.risk_level }}
-                    </p>
-                    <p class="text-xs text-on-surface-variant mt-1">
-                        Confidence: {{ latest_ml.confidence_score|floatformat:2 }}
-                    </p>
-                    <div class="mt-3 space-y-1">
-                        <div class="flex justify-between text-[11px]">
-                            <span class="text-on-surface-variant">P(Normal)</span>
-                            <span class="font-bold">{{ latest_ml.prob_normal|floatformat:2 }}</span>
-                        </div>
-                        <div class="flex justify-between text-[11px]">
-                            <span class="text-on-surface-variant">P(MAM)</span>
-                            <span class="font-bold">{{ latest_ml.prob_mam|floatformat:2 }}</span>
-                        </div>
-                        <div class="flex justify-between text-[11px]">
-                            <span class="text-on-surface-variant">P(SAM)</span>
-                            <span class="font-bold">{{ latest_ml.prob_sam|floatformat:2 }}</span>
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-on-surface-variant mt-3">
-                        Assessed: {{ latest_ml.assessed_at|date:"d M Y" }}
-                    </p>
+        <!-- Card 1: Identity -->
+        <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-3xl p-6 flex items-start gap-5 border border-outline-variant/10">
+            <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white font-extrabold text-2xl shrink-0">
+                {{ infant.full_name|slice:":1"|upper }}
+            </div>
+            <div class="flex-1">
+                <div class="flex flex-wrap gap-2 mb-3">
+                    {% if latest_growth.who_classification == 'SAM' %}
+                        <span class="px-3 py-1 bg-error-container text-error font-bold text-[10px] uppercase rounded-full">SAM Risk</span>
+                    {% elif latest_growth.who_classification == 'MAM' %}
+                        <span class="px-3 py-1 bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant font-bold text-[10px] uppercase rounded-full">MAM Risk</span>
                     {% else %}
-                    <p class="text-sm text-on-surface-variant">No assessment yet — requires 2+ visits.</p>
+                        <span class="px-3 py-1 bg-secondary-container text-on-secondary-container font-bold text-[10px] uppercase rounded-full">Normal</span>
                     {% endif %}
+                    <span class="px-3 py-1 bg-primary-fixed text-primary font-bold text-[10px] uppercase rounded-full">{{ age_display }}</span>
+                </div>
+                <div class="space-y-1.5">
+                    <p class="text-on-surface-variant text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">fingerprint</span>
+                        PHN: {{ infant.phn }}
+                    </p>
+                    <p class="text-on-surface-variant text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">cake</span>
+                        {{ infant.date_of_birth|date:"d M Y" }} ({{ infant.get_sex_display }})
+                    </p>
+                    <p class="text-on-surface-variant text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">location_on</span>
+                        {{ infant.moh_division }}
+                    </p>
                 </div>
             </div>
+        </div>
 
-            <!-- Middle + Right — Growth Chart + History + Immunization -->
-            <div class="col-span-2 space-y-6">
+        <!-- Card 2: Birth Details -->
+        <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+            <h3 class="font-headline text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Birth Details</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] text-outline uppercase font-bold">Birth Weight</p>
+                        <p class="font-bold text-primary text-lg">{{ infant.birth_weight_kg }} kg</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-outline uppercase font-bold">Birth Length</p>
+                        <p class="font-bold text-primary text-lg">{{ infant.birth_length_cm }} cm</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-outline uppercase font-bold">Birth Order</p>
+                        <p class="font-bold text-primary text-lg">{{ infant.birth_order }}</p>
+                    </div>
+                </div>
+                <div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] text-outline uppercase font-bold">Assigned PHM</p>
+                        <p class="font-bold text-primary">{{ infant.registered_phm.full_name }}</p>
+                    </div>
+                    <span class="px-3 py-1 bg-surface-container-high rounded-lg text-xs font-medium">{{ infant.moh_division }}</span>
+                </div>
+            </div>
+        </div>
 
-                <!-- Full WHO Growth Chart -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Growth Trajectory</h3>
-                        <div class="flex items-center gap-2">
-                            {% if latest_growth %}
-                            <span class="text-xs text-on-surface-variant">Latest WHZ:
-                                <span class="font-bold
-                                    {% if latest_growth.who_classification == 'SAM' %}text-error
-                                    {% elif latest_growth.who_classification == 'MAM' %}text-on-tertiary-fixed-variant
-                                    {% else %}text-secondary{% endif %}">
-                                    {{ latest_growth.whz|floatformat:2|default:"—" }}
-                                </span>
-                            </span>
-                            {% endif %}
+        <!-- Card 3: ML Risk Stratification -->
+        <div class="col-span-12 lg:col-span-4 rounded-3xl p-6 border flex flex-col justify-between overflow-hidden relative
+            {% if latest_ml.risk_level == 'SAM' %}bg-error-container/20 border-error/20
+            {% elif latest_ml.risk_level == 'MAM' %}bg-tertiary-fixed-dim/10 border-tertiary-fixed-dim/30
+            {% else %}bg-secondary-container/10 border-secondary-container/30{% endif %}">
+            <div class="relative z-10">
+                <h3 class="font-headline text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">ML Risk Stratification</h3>
+                {% if latest_ml %}
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-16 h-16 rounded-full border-[6px] flex items-center justify-center
+                        {% if latest_ml.risk_level == 'SAM' %}border-error
+                        {% elif latest_ml.risk_level == 'MAM' %}border-tertiary-fixed-dim
+                        {% else %}border-secondary{% endif %}">
+                        <span class="text-sm font-extrabold
+                            {% if latest_ml.risk_level == 'SAM' %}text-error
+                            {% elif latest_ml.risk_level == 'MAM' %}text-on-tertiary-fixed-variant
+                            {% else %}text-secondary{% endif %}">
+                            {{ latest_ml.risk_level }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold
+                            {% if latest_ml.risk_level == 'SAM' %}text-error
+                            {% elif latest_ml.risk_level == 'MAM' %}text-on-tertiary-fixed-variant
+                            {% else %}text-secondary{% endif %}">
+                            Confidence: {{ latest_ml.confidence_score|floatformat:2 }}
+                        </p>
+                        <p class="text-[10px] text-on-surface-variant mt-1">Assessed: {{ latest_ml.assessed_at|date:"d M Y" }}</p>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-on-surface-variant">P(Normal)</span>
+                        <span class="font-bold">{{ latest_ml.prob_normal|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-on-surface-variant">P(MAM)</span>
+                        <span class="font-bold">{{ latest_ml.prob_mam|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-on-surface-variant">P(SAM)</span>
+                        <span class="font-bold">{{ latest_ml.prob_sam|floatformat:2 }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-sm text-on-surface-variant">No assessment yet — requires 2+ visits.</p>
+                {% endif %}
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-white/5 pointer-events-none"></div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex gap-1 bg-surface-container-low p-1 rounded-2xl w-fit mb-8">
+        <button onclick="switchTab('growth')" id="tab-growth"
+            class="px-8 py-3 bg-white text-primary font-bold rounded-xl shadow-sm transition-all">
+            Growth
+        </button>
+        <button onclick="switchTab('vaccinations')" id="tab-vaccinations"
+            class="px-8 py-3 text-on-surface-variant font-medium hover:text-primary transition-all">
+            Vaccinations
+        </button>
+        <button onclick="switchTab('milestones')" id="tab-milestones"
+            class="px-8 py-3 text-on-surface-variant font-medium hover:text-primary transition-all">
+            Milestones
+        </button>
+    </div>
+
+    <!-- Tab: Growth -->
+    <div id="content-growth">
+        <div class="grid grid-cols-12 gap-8">
+            <div class="col-span-12 xl:col-span-8 space-y-8">
+
+                <div class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="font-headline text-xl font-extrabold text-primary">WHZ Growth Trajectory</h2>
+                            <p class="text-sm text-outline">Tracking against WHO reference bands</p>
                         </div>
+                        {% if latest_growth %}
+                        <span class="text-xs text-on-surface-variant">Latest WHZ:
+                            <span class="font-bold {% if latest_growth.who_classification == 'SAM' %}text-error{% elif latest_growth.who_classification == 'MAM' %}text-on-tertiary-fixed-variant{% else %}text-secondary{% endif %}">
+                                {{ latest_growth.whz|floatformat:2|default:"—" }}
+                            </span>
+                        </span>
+                        {% endif %}
                     </div>
                     <canvas id="growthChart" height="120"></canvas>
                 </div>
 
-                <!-- Latest Measurement Stats -->
                 {% if latest_growth %}
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+                <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Latest Measurement</h3>
+                        <h3 class="font-headline text-lg font-bold text-primary">Latest Measurement</h3>
                         <span class="text-xs text-on-surface-variant">{{ latest_growth.visit_date|date:"d M Y" }}</span>
                     </div>
                     <div class="grid grid-cols-4 gap-4">
                         <div class="text-center">
-                            <p class="text-2xl font-extrabold text-primary font-headline">{{ latest_growth.weight_kg }}</p>
+                            <p class="text-3xl font-extrabold text-primary font-headline">{{ latest_growth.weight_kg }}</p>
                             <p class="text-[10px] font-bold text-on-surface-variant uppercase">kg</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-extrabold text-primary font-headline">{{ latest_growth.height_cm }}</p>
+                            <p class="text-3xl font-extrabold text-primary font-headline">{{ latest_growth.height_cm }}</p>
                             <p class="text-[10px] font-bold text-on-surface-variant uppercase">cm</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-extrabold text-primary font-headline">{{ latest_growth.whz|floatformat:1|default:"—" }}</p>
+                            <p class="text-3xl font-extrabold text-primary font-headline">{{ latest_growth.whz|floatformat:1|default:"—" }}</p>
                             <p class="text-[10px] font-bold text-on-surface-variant uppercase">WHZ</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-extrabold font-headline
-                                {% if latest_growth.who_classification == 'SAM' %}text-error
-                                {% elif latest_growth.who_classification == 'MAM' %}text-on-tertiary-fixed-variant
-                                {% else %}text-secondary{% endif %}">
-                                {{ latest_growth.who_classification }}
+                            <p class="text-3xl font-extrabold font-headline {% if latest_growth.who_classification == 'SAM' %}text-error{% elif latest_growth.who_classification == 'MAM' %}text-on-tertiary-fixed-variant{% else %}text-secondary{% endif %}">
+                                {{ latest_growth.who_classification|default:"—" }}
                             </p>
                             <p class="text-[10px] font-bold text-on-surface-variant uppercase">WHO</p>
                         </div>
@@ -170,189 +212,226 @@
                 </div>
                 {% endif %}
 
-                <!-- Growth History Table -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Growth History</h3>
+                <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+                        <h3 class="font-headline text-lg font-bold">Measurement History</h3>
                         <a href="{% url 'clinic:growth_record' infant.phn %}" class="text-xs font-bold text-secondary hover:underline">Add Record</a>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
-                            <thead>
-                                <tr class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest bg-surface-container-low">
-                                    <th class="px-4 py-2">Date</th>
-                                    <th class="px-4 py-2">Weight</th>
-                                    <th class="px-4 py-2">Height</th>
-                                    <th class="px-4 py-2">WHZ</th>
-                                    <th class="px-4 py-2">Classification</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-outline-variant/10">
-                                {% for gr in growth_records %}
-                                <tr class="hover:bg-surface-container transition-colors">
-                                    <td class="px-4 py-2">{{ gr.visit_date|date:"d M Y" }}</td>
-                                    <td class="px-4 py-2">{{ gr.weight_kg }} kg</td>
-                                    <td class="px-4 py-2">{{ gr.height_cm }} cm</td>
-                                    <td class="px-4 py-2">{{ gr.whz|floatformat:2|default:"—" }}</td>
-                                    <td class="px-4 py-2">
-                                        {% if gr.who_classification == 'SAM' %}
-                                            <span class="bg-error-container text-error text-[10px] font-bold px-2 py-0.5 rounded-full">SAM</span>
-                                        {% elif gr.who_classification == 'MAM' %}
-                                            <span class="bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold px-2 py-0.5 rounded-full">MAM</span>
-                                        {% else %}
-                                            <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full">Normal</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="px-4 py-6 text-center text-xs text-on-surface-variant">No growth records yet.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <table class="w-full text-left">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Weight (kg)</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Height (cm)</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">WHZ</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for gr in growth_records %}
+                            <tr class="hover:bg-surface transition-colors">
+                                <td class="px-8 py-5 font-medium">{{ gr.visit_date|date:"d M Y" }}</td>
+                                <td class="px-8 py-5 text-primary font-bold text-lg">{{ gr.weight_kg }}</td>
+                                <td class="px-8 py-5">{{ gr.height_cm }}</td>
+                                <td class="px-8 py-5">{{ gr.whz|floatformat:2|default:"—" }}</td>
+                                <td class="px-8 py-5">
+                                    {% if gr.who_classification == 'SAM' %}
+                                        <span class="px-3 py-1 rounded-full bg-error-container text-error text-[10px] font-bold uppercase">SAM Risk</span>
+                                    {% elif gr.who_classification == 'MAM' %}
+                                        <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">MAM Risk</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Normal</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No growth records yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-span-12 xl:col-span-4 space-y-6">
+                {% if latest_ml and latest_ml.risk_level != 'NORMAL' %}
+                <div class="bg-error-container/20 rounded-3xl p-6 border-2 border-error/20">
+                    <div class="flex gap-4 items-start">
+                        <div class="w-12 h-12 bg-error-container rounded-2xl flex items-center justify-center text-error shrink-0">
+                            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+                        </div>
+                        <div>
+                            <h4 class="font-headline text-lg font-bold text-on-error-container">Clinical Action Required</h4>
+                            <p class="text-sm text-on-error-container/80 mt-1">ML Model: <span class="font-bold">{{ latest_ml.risk_level }} Risk Detected</span></p>
+                        </div>
                     </div>
                 </div>
+                {% endif %}
+                <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                    <h3 class="font-headline text-sm font-bold text-primary uppercase tracking-widest mb-4">Visit Summary</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-on-surface-variant">Total Visits</span>
+                            <span class="text-xl font-extrabold text-primary font-headline">{{ growth_records.count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                            <span class="text-sm text-on-surface-variant">Vaccines Recorded</span>
+                            <span class="text-xl font-extrabold text-secondary font-headline">{{ immunization_events|length }}</span>
+                        </div>
+                        {% if latest_growth.days_since_last_visit %}
+                        <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                            <span class="text-sm text-on-surface-variant">Days Since Last Visit</span>
+                            <span class="text-xl font-extrabold text-primary font-headline">{{ latest_growth.days_since_last_visit }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Immunization Summary -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Immunization Summary</h3>
-                        <a href="{% url 'clinic:immunization' infant.phn %}" class="text-xs font-bold text-secondary hover:underline">Manage</a>
+    <!-- Tab: Vaccinations -->
+    <div id="content-vaccinations" class="hidden">
+        <div class="grid grid-cols-12 gap-8">
+            <div class="col-span-12 lg:col-span-8 space-y-6">
+                <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-headline text-lg font-bold text-primary">Vaccination Record</h3>
+                        <a href="{% url 'clinic:immunization' infant.phn %}" class="text-xs font-bold text-secondary hover:underline">Record Vaccine</a>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
                         {% for imm in immunization_events %}
-                        <div class="rounded-xl p-3 border text-center
+                        <div class="rounded-2xl p-4 border text-center
                             {% if imm.dose_status == 'ADMINISTERED' %}bg-secondary-container/20 border-secondary-container/30
                             {% elif imm.dose_status == 'DEFAULTED' %}bg-error-container/20 border-error-container/30
                             {% else %}bg-surface-container border-outline-variant/20{% endif %}">
                             <p class="text-xs font-bold text-on-surface">{{ imm.get_vaccine_display }}</p>
-                            <p class="text-[10px] font-medium mt-1
-                                {% if imm.dose_status == 'ADMINISTERED' %}text-secondary
-                                {% elif imm.dose_status == 'DEFAULTED' %}text-error
-                                {% else %}text-on-surface-variant{% endif %}">
+                            {% if imm.date_administered %}
+                            <p class="text-[10px] text-on-surface-variant mt-1">{{ imm.date_administered|date:"d M Y" }}</p>
+                            {% endif %}
+                            <p class="text-[10px] font-bold mt-1 {% if imm.dose_status == 'ADMINISTERED' %}text-secondary{% elif imm.dose_status == 'DEFAULTED' %}text-error{% else %}text-on-surface-variant{% endif %}">
                                 {{ imm.get_dose_status_display }}
                             </p>
+                            {% if imm.is_defaulter %}
+                            <p class="text-[10px] text-error font-bold">{{ imm.defaulter_days_overdue }}d overdue</p>
+                            {% endif %}
                         </div>
                         {% empty %}
-                        <div class="col-span-3 text-center text-xs text-on-surface-variant py-4">No immunization records yet.</div>
+                        <div class="col-span-3 text-center py-8 text-sm text-on-surface-variant">No vaccination records yet.</div>
                         {% endfor %}
                     </div>
                 </div>
 
+                <div class="bg-primary-container text-on-primary-container rounded-2xl p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-secondary-container">info</span>
+                        <h3 class="font-headline text-lg font-bold">National Immunization Schedule</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">At Birth</span>
+                            <span class="text-[10px] font-bold">BCG, OPV (0), Hep B</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">2 Months</span>
+                            <span class="text-[10px] font-bold">Pentavalent (1), OPV (1), fIPV (1), PCV (1), Rota (1)</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">4 Months</span>
+                            <span class="text-[10px] font-bold">Pentavalent (2), OPV (2), fIPV (2), PCV (2), Rota (2)</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">6 Months</span>
+                            <span class="text-[10px] font-bold">Pentavalent (3), OPV (3), PCV (3)</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">9 Months</span>
+                            <span class="text-[10px] font-bold">MR (1)</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">12 Months</span>
+                            <span class="text-[10px] font-bold">Live JE</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
+                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">18 Months</span>
+                            <span class="text-[10px] font-bold">DTP Booster, OPV Booster, MR (2)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-4">
+                <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                    <h3 class="font-headline text-lg font-bold text-primary mb-6">Vaccination Summary</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-xl bg-secondary-container/20 border-l-4 border-secondary">
+                            <p class="text-xs text-secondary font-bold mb-1">TOTAL RECORDED</p>
+                            <p class="text-3xl font-bold font-headline text-secondary">{{ immunization_events|length }}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-error-container/20 border-l-4 border-error">
+                            <p class="text-xs text-error font-bold mb-1">DEFAULTED</p>
+                            <p class="text-3xl font-bold font-headline text-error">
+                                {% with count=0 %}
+                                {% for imm in immunization_events %}{% if imm.is_defaulter %}{% with count=count|add:1 %}{% endwith %}{% endif %}{% endfor %}
+                                {{ immunization_events|length }}
+                                {% endwith %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</main>
+
+    <!-- Tab: Milestones -->
+    <div id="content-milestones" class="hidden">
+        <div class="bg-surface-container-lowest rounded-3xl p-12 border border-outline-variant/10 text-center">
+            <span class="material-symbols-outlined text-6xl text-outline-variant mb-4 block">emoji_events</span>
+            <h3 class="font-headline text-xl font-bold text-on-surface-variant mb-2">Developmental Milestones</h3>
+            <p class="text-sm text-on-surface-variant">Milestone tracking is planned for a future development phase.</p>
+            <span class="inline-block mt-4 px-4 py-2 bg-surface-container text-on-surface-variant text-xs font-bold rounded-full">Future Release</span>
+        </div>
+    </div>
+
+</div>
 
 <script>
-const visitLabels = [
-    {% for gr in growth_records reversed %}
-        "{{ gr.visit_date|date:'d M Y' }}"{% if not forloop.last %},{% endif %}
-    {% endfor %}
-];
+function switchTab(tab) {
+    ['growth', 'vaccinations', 'milestones'].forEach(t => {
+        document.getElementById('content-' + t).classList.add('hidden');
+        document.getElementById('tab-' + t).classList.remove('bg-white', 'text-primary', 'font-bold', 'shadow-sm');
+        document.getElementById('tab-' + t).classList.add('text-on-surface-variant', 'font-medium');
+    });
+    document.getElementById('content-' + tab).classList.remove('hidden');
+    document.getElementById('tab-' + tab).classList.add('bg-white', 'text-primary', 'font-bold', 'shadow-sm');
+    document.getElementById('tab-' + tab).classList.remove('text-on-surface-variant', 'font-medium');
+}
+</script>
 
-const whzData = [
-    {% for gr in growth_records reversed %}
-        {{ gr.whz|default:"null" }}{% if not forloop.last %},{% endif %}
-    {% endfor %}
-];
-
+<script>
+const visitLabels = [{% for gr in growth_records reversed %}"{{ gr.visit_date|date:'d M Y' }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+const whzData = [{% for gr in growth_records reversed %}{{ gr.whz|default:"null" }}{% if not forloop.last %},{% endif %}{% endfor %}];
 const visitCount = visitLabels.length;
-const samLine    = Array(visitCount).fill(-3);
-const mamLine    = Array(visitCount).fill(-2);
-const normalLine = Array(visitCount).fill(0);
-
 const ctx = document.getElementById('growthChart').getContext('2d');
-
 new Chart(ctx, {
     type: 'line',
     data: {
         labels: visitLabels,
         datasets: [
-            {
-                label: 'WHZ Score',
-                data: whzData,
-                borderColor: '#0ea5e9',
-                backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                borderWidth: 2.5,
-                pointBackgroundColor: whzData.map(v => {
-                    if (v === null) return '#94a3b8';
-                    if (v < -3) return '#ef4444';
-                    if (v < -2) return '#f59e0b';
-                    return '#22c55e';
-                }),
-                pointRadius: 5,
-                tension: 0.3,
-                fill: false,
-            },
-            {
-                label: 'SAM Threshold (-3 SD)',
-                data: samLine,
-                borderColor: '#ef4444',
-                borderWidth: 1.5,
-                borderDash: [6, 3],
-                pointRadius: 0,
-                fill: false,
-            },
-            {
-                label: 'MAM Threshold (-2 SD)',
-                data: mamLine,
-                borderColor: '#f59e0b',
-                borderWidth: 1.5,
-                borderDash: [6, 3],
-                pointRadius: 0,
-                fill: false,
-            },
-            {
-                label: 'Median (0 SD)',
-                data: normalLine,
-                borderColor: '#22c55e',
-                borderWidth: 1,
-                borderDash: [4, 4],
-                pointRadius: 0,
-                fill: false,
-            }
+            { label: 'WHZ Score', data: whzData, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.1)', borderWidth: 2.5, pointBackgroundColor: whzData.map(v => v === null ? '#94a3b8' : v < -3 ? '#ef4444' : v < -2 ? '#f59e0b' : '#22c55e'), pointRadius: 5, tension: 0.3, fill: false },
+            { label: 'SAM (-3 SD)', data: Array(visitCount).fill(-3), borderColor: '#ef4444', borderWidth: 1.5, borderDash: [6,3], pointRadius: 0, fill: false },
+            { label: 'MAM (-2 SD)', data: Array(visitCount).fill(-2), borderColor: '#f59e0b', borderWidth: 1.5, borderDash: [6,3], pointRadius: 0, fill: false },
+            { label: 'Median', data: Array(visitCount).fill(0), borderColor: '#22c55e', borderWidth: 1, borderDash: [4,4], pointRadius: 0, fill: false }
         ]
     },
     options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { font: { size: 10 }, boxWidth: 12 }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(ctx) {
-                        if (ctx.dataset.label === 'WHZ Score') {
-                            const v = ctx.raw;
-                            if (v === null) return 'WHZ: No data';
-                            const status = v < -3 ? 'SAM' : v < -2 ? 'MAM' : 'Normal';
-                            return `WHZ: ${v} (${status})`;
-                        }
-                        return `${ctx.dataset.label}: ${ctx.raw}`;
-                    }
-                }
-            }
-        },
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } },
         scales: {
-            y: {
-                min: -5,
-                max: 3,
-                grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { font: { size: 10 } },
-                title: {
-                    display: true,
-                    text: 'WHZ Score',
-                    font: { size: 10, weight: 'bold' }
-                }
-            },
-            x: {
-                grid: { display: false },
-                ticks: { font: { size: 10 } }
-            }
+            y: { min: -5, max: 3, ticks: { font: { size: 10 } }, title: { display: true, text: 'WHZ Score', font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
         }
     }
 });
