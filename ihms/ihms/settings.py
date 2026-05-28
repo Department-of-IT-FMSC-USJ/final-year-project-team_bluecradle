@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'infants_module',
     'clinic_module',
     'ml_module',
+    'audit_module'
 ]
 
 MIDDLEWARE = [
