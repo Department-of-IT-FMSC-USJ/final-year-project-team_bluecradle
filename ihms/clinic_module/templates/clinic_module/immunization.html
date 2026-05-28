@@ -2,18 +2,20 @@
 {% load static %}
 
 {% block body_content %}
-    <!-- Top Nav -->
-    <header class="sticky top-0 z-40 flex justify-between items-center w-full px-8 py-4 bg-white/80 backdrop-blur-md shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'clinic:infant_detail' infant.phn %}" class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
-                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-            </a>
-            <div>
-                <h2 class="text-xl font-extrabold text-primary font-headline">Immunization</h2>
-                <p class="text-xs text-on-surface-variant font-medium">{{ infant.full_name }} — {{ infant.phn }}</p>
-            </div>
+<div class="p-8 max-w-[1600px]">
+    <div class="flex items-center gap-4">
+        <div>
+            <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+                <a href="{% url 'clinic:infant_search' %}" class="hover:text-primary">Infant Profiles</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <a href="{% url 'clinic:infant_detail' infant.phn %}" class="hover:text-primary">{{ infant.full_name }}</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <span class="text-primary font-semibold">Vaccinations</span>
+            </nav>
+            <h2 class="text-xl font-extrabold text-primary font-headline">Immunization</h2>
+            <p class="text-xs text-on-surface-variant font-medium">{{ infant.full_name }} — {{ infant.phn }}</p>
         </div>
-    </header>
+    </div>
 
     <div class="p-8 grid grid-cols-2 gap-6">
 
@@ -109,41 +111,38 @@
             </form>
         </div>
 
-        <!-- Right — Immunization History -->
-        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
-            <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Vaccination History</h3>
-            <div class="space-y-3">
-                {% for imm in immunization_events %}
-                <div class="flex items-center justify-between p-3 rounded-xl border
-                    {% if imm.dose_status == 'ADMINISTERED' %}bg-secondary-container/20 border-secondary-container/30
-                    {% elif imm.dose_status == 'DEFAULTED' %}bg-error-container/20 border-error-container/30
-                    {% else %}bg-surface-container border-outline-variant/20{% endif %}">
-                    <div>
-                        <p class="text-sm font-bold text-on-surface">{{ imm.get_vaccine_display }}</p>
-                        {% if imm.date_administered %}
-                        <p class="text-[10px] text-on-surface-variant">{{ imm.date_administered|date:"d M Y" }}</p>
-                        {% elif imm.scheduled_date %}
-                        <p class="text-[10px] text-on-surface-variant">Due: {{ imm.scheduled_date|date:"d M Y" }}</p>
-                        {% endif %}
-                        {% if imm.is_defaulter %}
-                        <p class="text-[10px] text-error font-bold">{{ imm.defaulter_days_overdue }} days overdue</p>
-                        {% endif %}
-                    </div>
-                    <span class="text-[10px] font-bold px-2 py-1 rounded-full
-                        {% if imm.dose_status == 'ADMINISTERED' %}bg-secondary-container text-on-secondary-container
-                        {% elif imm.dose_status == 'DEFAULTED' %}bg-error-container text-error
-                        {% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
-                        {{ imm.get_dose_status_display }}
-                    </span>
+        <!-- Right column -->
+        <div class="space-y-6">
+
+            <!-- Vaccination History -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Vaccination History</h3>
+                <div class="space-y-3">
+                    {% for imm in immunization_events %}
+                    ...existing immunization loop...
+                    {% endfor %}
                 </div>
-                {% empty %}
-                <p class="text-xs text-on-surface-variant text-center py-6">No vaccination records yet.</p>
-                {% endfor %}
             </div>
+
+            <!-- This Month Summary -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-primary uppercase tracking-widest mb-4">This Month Summary</h3>
+                <div class="space-y-3">
+                    <div class="p-4 rounded-xl bg-surface-container-low border-l-4 border-primary">
+                        <p class="text-xs text-on-surface-variant font-medium mb-1">DUE VACCINATIONS</p>
+                        <p class="text-3xl font-bold font-headline text-primary">{{ vaccinations_due }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-error-container/20 border-l-4 border-error">
+                        <p class="text-xs text-error font-bold mb-1">OVERDUE CASES</p>
+                        <p class="text-3xl font-bold font-headline text-error">{{ overdue_count }}</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
-</main>
+</div>
 
 <script>
     const doseStatus = document.getElementById('dose_status');

@@ -12,6 +12,7 @@ urlpatterns = [
     path('phm/infants/<str:phn>/growth/', views.growth_record, name='growth_record'),
     path('phm/infants/<str:phn>/immunization/', views.immunization, name='immunization'),
     path('phm/reports/h523/', views.h523_report, name='h523_report'),
+    path('phm/sessions/', views.session_start, name='session_start'),
 
     # API endpoints
     path('sessions/', views.ClinicSessionListCreateView.as_view(), name='session-list-create'),

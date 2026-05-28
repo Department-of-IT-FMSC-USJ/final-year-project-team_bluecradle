@@ -120,6 +120,7 @@ def phm_dashboard(request):
         'active_alerts': active_alerts,
         'unsynced_count': unsynced_count,
         'today': timezone.now(),
+        'active_nav': 'dashboard',
     }
 
     return render(
@@ -156,13 +157,17 @@ def infant_register(request):
         messages.success(request, f"Infant {data['full_name']} registered successfully.")
         return redirect('clinic:dashboard')
 
+    context = {
+        'title': 'BlueCradle - Infant Registration',
+        'active_nav': 'infants'
+    }
+    
     return render(
         request,
         'clinic_module/infant_register.html',
-        {
-            'title': 'BLueCradle - Infant Registration',
-        }
+        context,
     )
+
 
 @login_required
 def infant_search(request):
@@ -216,14 +221,17 @@ def infant_search(request):
             'who_classification': latest_growth.who_classification if latest_growth else 'NORMAL',
             'ml_risk': latest_ml.risk_level if latest_ml else 'NORMAL',
         })
-
+        
+    filter_type = request.GET.get('filter', None)
     context = {
         'title': 'BlueCradle - Infant Search',
         'infants': infants,
         'total_count': all_infants.count(),
         'query': query,
+        'active_nav': 'growth' if filter_type == 'risk' else 'infants',
     }
     return render(request, 'clinic_module/infant_search.html', context)
+
 
 @login_required
 def infant_detail(request, phn):
@@ -266,8 +274,10 @@ def infant_detail(request, phn):
         'growth_records': growth_records,
         'latest_ml': latest_ml,
         'immunization_events': immunization_events,
+        'active_nav': 'infants',
     }
     return render(request, 'clinic_module/infant_detail.html', context)
+
 
 @login_required
 def growth_record(request, phn):
@@ -309,8 +319,10 @@ def growth_record(request, phn):
         'sessions': sessions,
         'growth_records': growth_records,
         'today': today,
+        'active_nav': 'infants',
     }
     return render(request, 'clinic_module/growth_record.html', context)
+
 
 @login_required
 def immunization(request, phn):
@@ -357,8 +369,20 @@ def immunization(request, phn):
         'sessions': sessions,
         'immunization_events': immunization_events,
         'vaccine_choices': ImmunizationEvent.VACCINE_CHOICES,
+        # add these two:
+        'vaccinations_due': ImmunizationEvent.objects.filter(
+            infant__registered_phm=phm,
+            dose_status='DEFAULTED',
+            is_defaulter=False
+        ).count(),
+        'overdue_count': ImmunizationEvent.objects.filter(
+            infant__registered_phm=phm,
+            is_defaulter=True
+        ).count(),
+        'active_nav': 'infants',
     }
     return render(request, 'clinic_module/immunization.html', context)
+
 
 @login_required
 def h523_report(request):
@@ -385,8 +409,62 @@ def h523_report(request):
         'title': 'BlueCradle - H 523 Report',
         'h523': h523,
         'selected_date': selected_date,
+        'overdue_count': ImmunizationEvent.objects.filter(
+            infant__registered_phm=request.user.phm_profile,
+            is_defaulter=True
+        ).count(),
+        'defaulters': ImmunizationEvent.objects.filter(
+            infant__registered_phm=request.user.phm_profile,
+            is_defaulter=True
+        ).select_related('infant').order_by('-defaulter_days_overdue'),
+        'active_nav': 'reports'
     }
     return render(request, 'clinic_module/h523_report.html', context)
+
+@login_required
+def session_start(request):
+    phm = request.user.phm_profile
+    today = date.today()
+
+    if request.method == 'POST':
+        data = request.POST
+        ClinicSession.objects.create(
+            phm=phm,
+            session_date=data['session_date'],
+            session_type=data['session_type'],
+            location=data['location'],
+            moh_division=phm.moh_division,
+        )
+        messages.success(request, "Clinic session created successfully.")
+        return redirect('clinic:phm_dashboard')
+
+    # Past sessions
+    past_sessions = ClinicSession.objects.filter(
+        phm=phm
+    ).order_by('-session_date')[:10]
+
+    # Next upcoming session
+    next_session = ClinicSession.objects.filter(
+        phm=phm,
+        session_date__gte=today
+    ).order_by('session_date').first()
+
+    # Performance stats for current month
+    first_of_month = today.replace(day=1)
+    sessions_this_month = ClinicSession.objects.filter(
+        phm=phm,
+        session_date__gte=first_of_month
+    ).count()
+
+    context = {
+        'title': 'BlueCradle - Clinic Sessions',
+        'past_sessions': past_sessions,
+        'next_session': next_session,
+        'sessions_this_month': sessions_this_month,
+        'today': today,
+        'active_nav': 'sessions'
+    }
+    return render(request, 'clinic_module/session_start.html', context)
 
 class ClinicSessionListCreateView(APIView):
     permission_classes = [IsPHM]

@@ -1,0 +1,211 @@
+ {% extends 'clinic_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px] space-y-8">
+
+    <!-- Breadcrumb -->
+    <div>
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'clinic:dashboard' %}" class="hover:text-primary">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Clinic Sessions</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Clinic Sessions</h1>
+    </div>
+
+    <!-- Offline Banner — shown by JS when offline -->
+    <div id="offline-banner" class="hidden flex items-center justify-between bg-tertiary-fixed text-on-tertiary-fixed px-6 py-4 rounded-xl border border-tertiary-fixed-dim/30">
+        <div class="flex items-center gap-4">
+            <div class="bg-white/40 p-2 rounded-full">
+                <span class="material-symbols-outlined">cloud_off</span>
+            </div>
+            <div>
+                <p class="font-bold text-sm">Offline Mode Active</p>
+                <p class="text-sm opacity-90">Session data will be saved locally and synced when connectivity is restored.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Left Column -->
+        <div class="col-span-8 space-y-8">
+
+            <!-- Next Session Hero Card -->
+            {% if next_session %}
+            <section class="relative overflow-hidden bg-gradient-to-br from-[#006a62] to-[#1a3a5c] rounded-[2rem] p-8 text-white shadow-2xl">
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-end md:items-center">
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                            <span class="w-2 h-2 bg-secondary-fixed rounded-full animate-pulse"></span>
+                            Next Scheduled Session
+                        </div>
+                        <h3 class="text-4xl font-extrabold tracking-tight">{{ next_session.session_date|date:"l, d F Y" }}</h3>
+                        <div class="flex items-center gap-6 text-on-primary-container">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined">location_on</span>
+                                <span class="font-medium text-white">{{ next_session.location }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined">event_note</span>
+                                <span class="font-medium text-white">{{ next_session.get_session_type_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+            </section>
+            {% endif %}
+
+            <!-- New Session Form -->
+            <section class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+                <h3 class="font-headline text-xl font-extrabold text-primary mb-6">Schedule New Session</h3>
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium
+                        {% if message.tags == 'error' %}bg-error-container text-error
+                        {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" action="{% url 'clinic:session_start' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Session Date *</label>
+                            <input type="date" name="session_date" required
+                                value="{{ today }}"
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Session Type *</label>
+                            <select name="session_type" required
+                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                                <option value="CLINIC">Clinic Session</option>
+                                <option value="DOMICILIARY">Domiciliary Visit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Location *</label>
+                        <input type="text" name="location" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. Polgolla Clinic Center">
+                    </div>
+                    <button type="submit"
+                        class="w-full py-3 rounded-xl bg-secondary text-white font-bold hover:bg-on-secondary-container transition-colors shadow-md">
+                        Create Session
+                    </button>
+                </form>
+            </section>
+
+            <!-- Past Sessions Table -->
+            <section class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10">
+                    <h3 class="font-headline text-lg font-bold">Recent Sessions</h3>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Type</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Location</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Division</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest text-right">Sync</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for session in past_sessions %}
+                        <tr class="hover:bg-surface-container-low transition-colors">
+                            <td class="px-8 py-5 font-medium">{{ session.session_date|date:"d M Y" }}</td>
+                            <td class="px-8 py-5 text-sm">{{ session.get_session_type_display }}</td>
+                            <td class="px-8 py-5 text-sm">{{ session.location }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ session.moh_division }}</td>
+                            <td class="px-8 py-5 text-right">
+                                {% if session.is_synced %}
+                                <div class="flex items-center justify-end gap-2">
+                                    <span class="text-[10px] font-medium text-secondary">Synced</span>
+                                    <div class="w-2.5 h-2.5 bg-secondary rounded-full"></div>
+                                </div>
+                                {% else %}
+                                <div class="flex items-center justify-end gap-2">
+                                    <span class="text-[10px] font-medium text-error">Pending</span>
+                                    <div class="w-2.5 h-2.5 bg-error rounded-full animate-pulse"></div>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No sessions yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-span-4 space-y-6">
+
+            <!-- Performance Stats -->
+            <div class="bg-primary text-white rounded-[2rem] p-8 shadow-xl">
+                <h4 class="text-lg font-bold mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined">analytics</span>
+                    This Month
+                </h4>
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                        <span class="text-on-primary-container text-sm">Sessions Held</span>
+                        <span class="text-3xl font-extrabold">{{ sessions_this_month }}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                        <span class="text-on-primary-container text-sm">Pending Sync</span>
+                        <span class="text-3xl font-extrabold
+                            {% if unsynced_count > 0 %}text-tertiary-fixed-dim{% else %}text-secondary-fixed{% endif %}">
+                            {{ unsynced_count }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Local Sync Queue -->
+            <div class="bg-surface-container-low rounded-3xl p-6">
+                <h4 class="font-bold text-primary mb-4 text-sm uppercase tracking-widest">Local Sync Queue</h4>
+                {% if unsynced_count > 0 %}
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-tertiary-fixed-dim mt-0.5">hourglass_top</span>
+                    <div>
+                        <p class="text-xs font-bold text-on-surface">{{ unsynced_count }} records pending</p>
+                        <p class="text-[10px] text-on-surface-variant">Waiting for connection...</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    <div>
+                        <p class="text-xs font-bold text-on-surface">All records synced</p>
+                        <p class="text-[10px] text-on-surface-variant">No pending items</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+window.addEventListener('offline', () => {
+    document.getElementById('offline-banner').classList.remove('hidden');
+});
+window.addEventListener('online', () => {
+    document.getElementById('offline-banner').classList.add('hidden');
+});
+</script>
+
+{% endblock %}
