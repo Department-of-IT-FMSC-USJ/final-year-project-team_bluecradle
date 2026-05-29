@@ -203,7 +203,7 @@
 </main>
 <!-- Floating Chat Assistant -->
 <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-<div class="bg-white shadow-2xl rounded-2xl w-80 border border-outline-variant/10 hidden md:block overflow-hidden">
+<div class="bg-white shadow-2xl rounded-2xl w-80 border border-outline-variant/10 hidden overflow-hidden">
 <div class="bg-secondary p-4 flex items-center gap-3">
 <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
 <span class="material-symbols-outlined text-white text-lg" data-icon="smart_toy">smart_toy</span>
@@ -376,6 +376,111 @@ markAllBtn.addEventListener('click', markAllAsRead);
 // Fetch on page load + poll every 60 seconds
 fetchNotifications();
 setInterval(fetchNotifications, 60000);
+</script>
+
+<script>
+(function () {
+    const chatPanel = document.querySelector('.fixed.bottom-6 .bg-white');
+    const toggleBtn = document.querySelector('.fixed.bottom-6 > button');
+    const input = chatPanel.querySelector('input');
+    const sendBtn = chatPanel.querySelector('button');
+    const messagesArea = chatPanel.querySelector('.bg-surface');
+
+    // ── Message bubble builder ──────────────────────────
+    function appendMessage(text, sender) {
+        const bubble = document.createElement('div');
+        bubble.className = sender === 'user'
+            ? 'bg-secondary/10 rounded-xl p-3 text-xs text-on-surface mb-2 text-right ml-6'
+            : 'bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6';
+        bubble.textContent = text;
+        // Insert before the input row
+        messagesArea.insertBefore(bubble, messagesArea.querySelector('.relative'));
+    }
+
+    function appendLoading() {
+        const el = document.createElement('div');
+        el.id = 'chat-loading';
+        el.className = 'bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6 italic opacity-60';
+        el.textContent = 'Thinking…';
+        messagesArea.insertBefore(el, messagesArea.querySelector('.relative'));
+        return el;
+    }
+
+    // ── Load history ────────────────────────────────────
+    function loadHistory() {
+        fetch('/api/chatbot/history/', {
+            headers: { 'X-CSRFToken': getCsrf() }
+        })
+        .then(r => r.json())
+        .then(data => {
+            // Clear existing bubbles (keep input row)
+            messagesArea.querySelectorAll('div:not(.relative)').forEach(el => el.remove());
+            data.forEach(log => {
+                if (log.role === 'PHM') {
+                    appendMessage(log.user_message, 'user');
+                    appendMessage(log.bot_response, 'bot');
+                }
+            });
+        })
+        .catch(() => {});
+    }
+
+    // ── Send message ────────────────────────────────────
+    function sendMessage() {
+        const message = input.value.trim();
+        if (!message) return;
+
+        input.value = '';
+        appendMessage(message, 'user');
+        const loader = appendLoading();
+
+        fetch('/api/chatbot/phm/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrf()
+            },
+            body: JSON.stringify({ message: message })
+        })
+        .then(r => r.json())
+        .then(data => {
+            loader.remove();
+            appendMessage(data.bot_response, 'bot');
+        })
+        .catch(() => {
+            loader.remove();
+            appendMessage('Sorry, something went wrong. Please try again.', 'bot');
+        });
+    }
+
+    // ── Toggle panel ────────────────────────────────────
+    toggleBtn.addEventListener('click', function () {
+        const isOpen = chatPanel.classList.contains('chat-open');
+        if (isOpen) {
+            chatPanel.classList.remove('chat-open');
+            chatPanel.classList.add('hidden');
+        } else {
+            chatPanel.classList.add('chat-open');
+            chatPanel.classList.remove('hidden');
+            loadHistory();
+            input.focus();
+        }
+    });
+
+    // ── Send on button click ─────────────────────────────
+    sendBtn.addEventListener('click', sendMessage);
+
+    // ── Send on Enter key ────────────────────────────────
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // ── CSRF helper ──────────────────────────────────────
+    function getCsrf() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+})();
 </script>
 
 {% endblock %}

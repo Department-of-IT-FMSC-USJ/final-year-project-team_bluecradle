@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'ml_module',
     'audit_module',
     'notifications_module',
+    'chatbot_module',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +150,16 @@ VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY')
 VAPID_ADMIN_EMAIL = config('VAPID_ADMIN_EMAIL')
 
 # ───────────────────────────────────────────
+# ChormaDB
+# ───────────────────────────────────────────
+CHROMA_DB_PATH = config('CHROMA_DB_PATH')
+
+# ───────────────────────────────────────────
+# Gemini
+# ───────────────────────────────────────────
+GEMINI_API_KEY = config('GEMINI_API_KEY')
+
+# ───────────────────────────────────────────
 # Trigger notifications daily
 # ───────────────────────────────────────────
 CELERY_BEAT_SCHEDULE = {
@@ -166,3 +177,13 @@ CELERY_BEAT_SCHEDULE = {
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
