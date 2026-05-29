@@ -202,8 +202,8 @@
 </div>
 </main>
 <!-- Floating Chat Assistant -->
-<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-<div class="bg-white shadow-2xl rounded-2xl w-80 border border-outline-variant/10 hidden overflow-hidden">
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">     
+<div class="bg-white shadow-2xl rounded-2xl w-80 border border-outline-variant/10 hidden overflow-hidden" style="height: 480px; width: 380px;">
 <div class="bg-secondary p-4 flex items-center gap-3">
 <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
 <span class="material-symbols-outlined text-white text-lg" data-icon="smart_toy">smart_toy</span>
@@ -213,10 +213,12 @@
 <p class="text-[10px] text-secondary-container">Clinical Protocol Guide</p>
 </div>
 </div>
-<div class="p-4 bg-surface">
-<div class="bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-3">
-                    How can I assist you with clinical guidelines or SAM protocols today?
-                </div>
+<div class="p-4 bg-surface flex flex-col" style="height: 420px;">
+<div id="chat-messages" class="flex-1 overflow-y-auto mb-3 pr-1" style="scroll-behavior: smooth;">
+    <div class="bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6">
+        How can I assist you with clinical guidelines or SAM protocols today?
+    </div>
+</div>
 <div class="relative">
 <input class="w-full pl-4 pr-10 py-2.5 rounded-xl border-none bg-surface-container-lowest text-xs focus:ring-2 focus:ring-secondary/20 shadow-inner" placeholder="Ask a clinical question…" type="text">
 <button class="absolute right-2 top-1/2 -translate-y-1/2 text-secondary">
@@ -385,6 +387,7 @@ setInterval(fetchNotifications, 60000);
     const input = chatPanel.querySelector('input');
     const sendBtn = chatPanel.querySelector('button');
     const messagesArea = chatPanel.querySelector('.bg-surface');
+    const messagesContainer = chatPanel.querySelector('#chat-messages');
 
     // ── Message bubble builder ──────────────────────────
     function appendMessage(text, sender) {
@@ -393,8 +396,8 @@ setInterval(fetchNotifications, 60000);
             ? 'bg-secondary/10 rounded-xl p-3 text-xs text-on-surface mb-2 text-right ml-6'
             : 'bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6';
         bubble.textContent = text;
-        // Insert before the input row
-        messagesArea.insertBefore(bubble, messagesArea.querySelector('.relative'));
+        messagesContainer.appendChild(bubble);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     function appendLoading() {
@@ -402,7 +405,8 @@ setInterval(fetchNotifications, 60000);
         el.id = 'chat-loading';
         el.className = 'bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6 italic opacity-60';
         el.textContent = 'Thinking…';
-        messagesArea.insertBefore(el, messagesArea.querySelector('.relative'));
+        messagesContainer.appendChild(el);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
         return el;
     }
 
@@ -414,7 +418,7 @@ setInterval(fetchNotifications, 60000);
         .then(r => r.json())
         .then(data => {
             // Clear existing bubbles (keep input row)
-            messagesArea.querySelectorAll('div:not(.relative)').forEach(el => el.remove());
+            messagesContainer.innerHTML = '';
             data.forEach(log => {
                 if (log.role === 'PHM') {
                     appendMessage(log.user_message, 'user');
@@ -480,6 +484,16 @@ setInterval(fetchNotifications, 60000);
         const match = document.cookie.match(/csrftoken=([^;]+)/);
         return match ? match[1] : '';
     }
+
+    document.addEventListener('click', function (e) {
+        if (!chatPanel.contains(e.target) && !toggleBtn.contains(e.target)) {
+            if (chatPanel.classList.contains('chat-open')) {
+                chatPanel.classList.remove('chat-open');
+                chatPanel.classList.add('hidden');
+            }
+        }
+    });
+
 })();
 </script>
 
