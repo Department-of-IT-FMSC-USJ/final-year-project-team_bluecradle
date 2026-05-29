@@ -10,3 +10,7 @@ tensorflow
 pywebpush
 python-decouple
 reportlab
+sentence_transformers
+chromadb
+google-genai
+pdfplumber

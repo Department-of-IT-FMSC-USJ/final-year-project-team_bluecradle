@@ -35,3 +35,9 @@ Thumbs.db
 
 # .env file for environment variables
 .env
+
+# ChromaDB
+chroma_db/
+
+# Chatbot sources
+rag_docs/

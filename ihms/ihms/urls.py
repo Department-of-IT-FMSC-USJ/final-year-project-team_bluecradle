@@ -31,6 +31,8 @@ urlpatterns = [
     path('api/clinic/', include('clinic_module.urls', namespace='clinic')),
 
     path('api/notifications/', include('notifications_module.urls', namespace='notifications')),
+
+    path('api/chatbot/', include('chatbot_module.urls', namespace='chatbot')),
 ]
 
 # Fallback pages
