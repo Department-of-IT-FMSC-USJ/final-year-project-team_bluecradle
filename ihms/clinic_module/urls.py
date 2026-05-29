@@ -15,6 +15,9 @@ urlpatterns = [
     path('phm/sessions/', views.session_start, name='session_start'),
     path('phm/reports/h523/download/', views.h523_download_pdf, name='h523_download'),
     path('phm/alerts/', views.alerts, name='alerts'),
+    path('phm/sessions/<int:pk>/activate/', views.session_activate, name='session_activate'),
+    path('phm/sessions/<int:pk>/complete/', views.session_complete, name='session_complete'),
+    path('phm/sessions/manual/', views.session_manual_create, name='session_manual_create'),
 
     # API endpoints
     path('sessions/', views.ClinicSessionListCreateView.as_view(), name='session-list-create'),

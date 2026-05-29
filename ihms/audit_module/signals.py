@@ -11,7 +11,7 @@ def _compute_hash(payload: dict) -> str:
     raw = json.dumps(payload, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-def _write_audit(instance, created, bool):
+def _write_audit(instance, created):
     action = 'CREATE' if created else 'UPDATE'
     snapshot = model_to_dict(instance)
 
@@ -23,6 +23,10 @@ def _write_audit(instance, created, bool):
 
     if hasattr(instance, 'updated_at'):
         snapshot['updated_at'] = instance.updated_at
+
+    # Normalize snapshot — convert datetimes and other non-serializable
+    # types to strings so payload_snapshot is always JSON-safe
+    snapshot = json.loads(json.dumps(snapshot, default=str))
 
     payload_hash = _compute_hash(snapshot)
 
