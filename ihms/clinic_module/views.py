@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent
+from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent, ClinicSchedule
 from .serializers import ClinicSessionSerializer, GrowthRecordSerializer, ImmunizationEventSerializer, FHBAtomicEventSerializer
 from django.contrib.auth.decorators import login_required
 from infants_module.models import Infant
@@ -433,48 +433,179 @@ def h523_report(request):
 
 @login_required
 def session_start(request):
+    """
+    Main clinic sessions page.
+    Shows upcoming, active, and completed sessions in separate tabs.
+    Also handles the annual schedule creation form.
+    """
+    from .models import ClinicSchedule
+    from .schedule_utils import generate_sessions_from_schedule
+    import json
+
     phm = request.user.phm_profile
     today = date.today()
+    current_year = today.year
 
     if request.method == 'POST':
-        data = request.POST
-        ClinicSession.objects.create(
-            phm=phm,
-            session_date=data['session_date'],
-            session_type=data['session_type'],
-            location=data['location'],
-            moh_division=phm.moh_division,
-        )
-        messages.success(request, "Clinic session created successfully.")
-        return redirect('clinic:phm_dashboard')
+        form_type = request.POST.get('form_type')
 
-    # Past sessions
-    past_sessions = ClinicSession.objects.filter(
-        phm=phm
-    ).order_by('-session_date')[:10]
+        # ── Schedule form — RECURRING mode ───────────────────────────────────
+        if form_type == 'recurring':
+            existing = ClinicSchedule.objects.filter(
+                phm=phm, year=current_year
+            ).first()
 
-    # Next upcoming session
-    next_session = ClinicSession.objects.filter(
+            if existing:
+                messages.error(request, f"A schedule for {current_year} already exists.")
+            else:
+                schedule = ClinicSchedule.objects.create(
+                    phm=phm,
+                    year=current_year,
+                    session_type=request.POST.get('session_type', 'CLINIC'),
+                    location=request.POST['location'],
+                    schedule_mode='RECURRING',
+                    first_date=request.POST['first_date'],
+                    frequency_weeks=int(request.POST['frequency_weeks']),
+                )
+                count = generate_sessions_from_schedule(schedule)
+                messages.success(
+                    request,
+                    f"Schedule created. {count} sessions generated for {current_year}."
+                )
+            return redirect('clinic:session_start')
+
+        # ── Schedule form — FIXED_DATES mode ─────────────────────────────────
+        elif form_type == 'fixed_dates':
+            existing = ClinicSchedule.objects.filter(
+                phm=phm, year=current_year
+            ).first()
+
+            if existing:
+                messages.error(request, f"A schedule for {current_year} already exists.")
+            else:
+                raw_dates = request.POST.get('fixed_dates', '')
+                # Expect comma-separated ISO dates: "2026-01-15,2026-02-19,..."
+                date_list = [d.strip() for d in raw_dates.split(',') if d.strip()]
+
+                schedule = ClinicSchedule.objects.create(
+                    phm=phm,
+                    year=current_year,
+                    session_type=request.POST.get('session_type', 'CLINIC'),
+                    location=request.POST['location'],
+                    schedule_mode='FIXED_DATES',
+                    fixed_dates=date_list,
+                )
+                count = generate_sessions_from_schedule(schedule)
+                messages.success(
+                    request,
+                    f"Schedule created. {count} sessions generated for {current_year}."
+                )
+            return redirect('clinic:session_start')
+
+    # ── Queries ───────────────────────────────────────────────────────────────
+    upcoming_sessions = ClinicSession.objects.filter(
         phm=phm,
+        status='UPCOMING',
         session_date__gte=today
-    ).order_by('session_date').first()
+    ).order_by('session_date')
 
-    # Performance stats for current month
+    active_sessions = ClinicSession.objects.filter(
+        phm=phm,
+        status='ACTIVE'
+    ).order_by('session_date')
+
+    completed_sessions = ClinicSession.objects.filter(
+        phm=phm,
+        status='COMPLETED'
+    ).order_by('-session_date')[:20]
+
+    existing_schedule = ClinicSchedule.objects.filter(
+        phm=phm,
+        year=current_year
+    ).first()
+
     first_of_month = today.replace(day=1)
     sessions_this_month = ClinicSession.objects.filter(
         phm=phm,
-        session_date__gte=first_of_month
+        session_date__gte=first_of_month,
+        status='COMPLETED'
     ).count()
 
     context = {
         'title': 'BlueCradle - Clinic Sessions',
-        'past_sessions': past_sessions,
-        'next_session': next_session,
+        'upcoming_sessions': upcoming_sessions,
+        'active_sessions': active_sessions,
+        'completed_sessions': completed_sessions,
+        'existing_schedule': existing_schedule,
         'sessions_this_month': sessions_this_month,
+        'current_year': current_year,
         'today': today,
-        'active_nav': 'sessions'
+        'active_nav': 'sessions',
+        'unsynced_count': FHBAtomicEvent.objects.filter(
+            phm=phm, is_synced=False
+        ).count(),
     }
     return render(request, 'clinic_module/session_start.html', context)
+
+
+@login_required
+def session_activate(request, pk):
+    """
+    POST /clinic/phm/sessions/<pk>/activate/
+    PHM starts today's session — flips status from UPCOMING to ACTIVE.
+    """
+    phm = request.user.phm_profile
+    session = get_object_or_404(
+        ClinicSession,
+        pk=pk,
+        phm=phm,
+        status='UPCOMING'
+    )
+    session.status = 'ACTIVE'
+    session.save(update_fields=['status'])
+    messages.success(request, f"Session started — {session.session_date}.")
+    return redirect('clinic:session_start')
+
+
+@login_required
+def session_complete(request, pk):
+    """
+    POST /clinic/phm/sessions/<pk>/complete/
+    PHM closes the session at end of day — flips status from ACTIVE to COMPLETED.
+    """
+    phm = request.user.phm_profile
+    session = get_object_or_404(
+        ClinicSession,
+        pk=pk,
+        phm=phm,
+        status='ACTIVE'
+    )
+    session.status = 'COMPLETED'
+    session.save(update_fields=['status'])
+    messages.success(request, f"Session completed — {session.session_date}.")
+    return redirect('clinic:session_start')
+
+
+@login_required
+def session_manual_create(request):
+    """
+    POST /clinic/phm/sessions/manual/
+    Fallback — allows PHM to manually create a one-off session
+    (e.g. an unscheduled domiciliary visit) without a ClinicSchedule.
+    """
+    phm = request.user.phm_profile
+
+    if request.method == 'POST':
+        ClinicSession.objects.create(
+            phm=phm,
+            session_date=request.POST['session_date'],
+            session_type=request.POST['session_type'],
+            location=request.POST['location'],
+            moh_division=phm.moh_division,
+            status='UPCOMING',
+        )
+        messages.success(request, "Manual session created successfully.")
+    return redirect('clinic:session_start')
 
 
 @login_required

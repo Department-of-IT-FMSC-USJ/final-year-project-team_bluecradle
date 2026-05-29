@@ -1,9 +1,8 @@
- {% extends 'clinic_module/sub_base.html' %}
+{% extends 'clinic_module/sub_base.html' %}
 {% load static %}
 
 {% block body_content %}
 <div class="p-8 max-w-[1600px] space-y-8">
-
     <!-- Breadcrumb -->
     <div>
         <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
@@ -14,157 +13,356 @@
         <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Clinic Sessions</h1>
     </div>
 
-    <!-- Offline Banner — shown by JS when offline -->
-    <div id="offline-banner" class="hidden flex items-center justify-between bg-tertiary-fixed text-on-tertiary-fixed px-6 py-4 rounded-xl border border-tertiary-fixed-dim/30">
-        <div class="flex items-center gap-4">
-            <div class="bg-white/40 p-2 rounded-full">
-                <span class="material-symbols-outlined">cloud_off</span>
-            </div>
-            <div>
-                <p class="font-bold text-sm">Offline Mode Active</p>
-                <p class="text-sm opacity-90">Session data will be saved locally and synced when connectivity is restored.</p>
-            </div>
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-xl text-sm font-medium
+            {% if message.tags == 'error' %}bg-error-container text-error
+            {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
+            {{ message }}
         </div>
-    </div>
+        {% endfor %}
+    {% endif %}
 
     <div class="grid grid-cols-12 gap-8">
 
-        <!-- Left Column -->
+        <!-- Left Column — Sessions -->
         <div class="col-span-8 space-y-8">
 
-            <!-- Next Session Hero Card -->
-            {% if next_session %}
-            <section class="relative overflow-hidden bg-gradient-to-br from-[#006a62] to-[#1a3a5c] rounded-[2rem] p-8 text-white shadow-2xl">
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-end md:items-center">
-                    <div class="space-y-4">
-                        <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                            <span class="w-2 h-2 bg-secondary-fixed rounded-full animate-pulse"></span>
-                            Next Scheduled Session
-                        </div>
-                        <h3 class="text-4xl font-extrabold tracking-tight">{{ next_session.session_date|date:"l, d F Y" }}</h3>
-                        <div class="flex items-center gap-6 text-on-primary-container">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined">location_on</span>
-                                <span class="font-medium text-white">{{ next_session.location }}</span>
+            <!-- Active Session Banner — shown if a session is currently active -->
+            {% if active_sessions %}
+                {% for session in active_sessions %}
+                <section class="relative overflow-hidden bg-gradient-to-br from-[#006a62] to-[#1a3a5c] rounded-[2rem] p-8 text-white shadow-2xl">
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-end md:items-center gap-6">
+                        <div class="space-y-3">
+                            <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                <span class="w-2 h-2 bg-secondary-fixed rounded-full animate-pulse"></span>
+                                Session In Progress
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined">event_note</span>
-                                <span class="font-medium text-white">{{ next_session.get_session_type_display }}</span>
+                            <h3 class="text-3xl font-extrabold tracking-tight">{{ session.session_date|date:"l, d F Y" }}</h3>
+                            <div class="flex items-center gap-6 text-white/80">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">location_on</span>
+                                    <span class="font-medium text-white">{{ session.location }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">event_note</span>
+                                    <span class="font-medium text-white">{{ session.get_session_type_display }}</span>
+                                </div>
                             </div>
                         </div>
+                        <form method="POST" action="{% url 'clinic:session_complete' session.pk %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="flex items-center gap-2 bg-white text-[#1A3A5C] font-bold px-6 py-3 rounded-xl hover:bg-white/90 transition-colors shadow-md shrink-0">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                Complete Session
+                            </button>
+                        </form>
                     </div>
-                </div>
-                <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
-            </section>
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+                </section>
+                {% endfor %}
             {% endif %}
 
-            <!-- New Session Form -->
-            <section class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
-                <h3 class="font-headline text-xl font-extrabold text-primary mb-6">Schedule New Session</h3>
-
-                {% if messages %}
-                    {% for message in messages %}
-                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium
-                        {% if message.tags == 'error' %}bg-error-container text-error
-                        {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
-
-                <form method="POST" action="{% url 'clinic:session_start' %}" class="space-y-4">
-                    {% csrf_token %}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Session Date *</label>
-                            <input type="date" name="session_date" required
-                                value="{{ today }}"
-                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Session Type *</label>
-                            <select name="session_type" required
-                                class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
-                                <option value="CLINIC">Clinic Session</option>
-                                <option value="DOMICILIARY">Domiciliary Visit</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Location *</label>
-                        <input type="text" name="location" required
-                            class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                            placeholder="e.g. Polgolla Clinic Center">
-                    </div>
-                    <button type="submit"
-                        class="w-full py-3 rounded-xl bg-secondary text-white font-bold hover:bg-on-secondary-container transition-colors shadow-md">
-                        Create Session
-                    </button>
-                </form>
-            </section>
-
-            <!-- Past Sessions Table -->
+            <!-- Session Tabs -->
             <section class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
-                <div class="px-8 py-6 border-b border-outline-variant/10">
-                    <h3 class="font-headline text-lg font-bold">Recent Sessions</h3>
+
+                <!-- Tab Headers -->
+                <div class="flex border-b border-outline-variant/10">
+                    <button onclick="showTab('upcoming')" id="tab-upcoming"
+                        class="tab-btn flex-1 py-4 text-sm font-bold text-center transition-colors border-b-2 border-primary text-primary">
+                        Upcoming
+                        {% if upcoming_sessions %}
+                        <span class="ml-2 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                            {{ upcoming_sessions|length }}
+                        </span>
+                        {% endif %}
+                    </button>
+                    <button onclick="showTab('completed')" id="tab-completed"
+                        class="tab-btn flex-1 py-4 text-sm font-bold text-center transition-colors border-b-2 border-transparent text-on-surface-variant hover:text-primary">
+                        Completed
+                    </button>
                 </div>
-                <table class="w-full text-left">
-                    <thead class="bg-surface-container-low">
-                        <tr>
-                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
-                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Type</th>
-                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Location</th>
-                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Division</th>
-                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest text-right">Sync</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-outline-variant/10">
-                        {% for session in past_sessions %}
-                        <tr class="hover:bg-surface-container-low transition-colors">
-                            <td class="px-8 py-5 font-medium">{{ session.session_date|date:"d M Y" }}</td>
-                            <td class="px-8 py-5 text-sm">{{ session.get_session_type_display }}</td>
-                            <td class="px-8 py-5 text-sm">{{ session.location }}</td>
-                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ session.moh_division }}</td>
-                            <td class="px-8 py-5 text-right">
-                                {% if session.is_synced %}
-                                <div class="flex items-center justify-end gap-2">
-                                    <span class="text-[10px] font-medium text-secondary">Synced</span>
-                                    <div class="w-2.5 h-2.5 bg-secondary rounded-full"></div>
-                                </div>
-                                {% else %}
-                                <div class="flex items-center justify-end gap-2">
-                                    <span class="text-[10px] font-medium text-error">Pending</span>
-                                    <div class="w-2.5 h-2.5 bg-error rounded-full animate-pulse"></div>
-                                </div>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No sessions yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+                <!-- Upcoming Tab -->
+                <div id="panel-upcoming">
+                    <table class="w-full text-left">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Type</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Location</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Source</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for session in upcoming_sessions %}
+                            <tr class="hover:bg-surface-container-low transition-colors
+                                {% if session.session_date == today %}bg-secondary-container/20{% endif %}">
+                                <td class="px-8 py-5">
+                                    <span class="font-bold text-sm text-on-surface">{{ session.session_date|date:"d M Y" }}</span>
+                                    {% if session.session_date == today %}
+                                    <span class="ml-2 bg-secondary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">TODAY</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-8 py-5 text-sm">{{ session.get_session_type_display }}</td>
+                                <td class="px-8 py-5 text-sm">{{ session.location }}</td>
+                                <td class="px-8 py-5 text-sm text-on-surface-variant">
+                                    {% if session.schedule %}
+                                        <span class="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full">Scheduled</span>
+                                    {% else %}
+                                        <span class="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full">Manual</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-8 py-5 text-right">
+                                    {% if session.session_date == today %}
+                                    <form method="POST" action="{% url 'clinic:session_activate' session.pk %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                            class="flex items-center gap-2 bg-secondary text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-on-secondary-container transition-colors ml-auto">
+                                            <span class="material-symbols-outlined text-sm">play_arrow</span>
+                                            Start
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-xs text-on-surface-variant">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">
+                                    No upcoming sessions. Set your annual schedule to generate them.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Completed Tab -->
+                <div id="panel-completed" class="hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Type</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Location</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest text-right">Sync</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for session in completed_sessions %}
+                            <tr class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-8 py-5 font-medium text-sm">{{ session.session_date|date:"d M Y" }}</td>
+                                <td class="px-8 py-5 text-sm">{{ session.get_session_type_display }}</td>
+                                <td class="px-8 py-5 text-sm">{{ session.location }}</td>
+                                <td class="px-8 py-5 text-right">
+                                    {% if session.is_synced %}
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-[10px] font-medium text-secondary">Synced</span>
+                                        <div class="w-2.5 h-2.5 bg-secondary rounded-full"></div>
+                                    </div>
+                                    {% else %}
+                                    <div class="flex items-center justify-end gap-2">
+                                        <span class="text-[10px] font-medium text-error">Pending</span>
+                                        <div class="w-2.5 h-2.5 bg-error rounded-full animate-pulse"></div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-8 py-8 text-center text-sm text-on-surface-variant">No completed sessions yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
             </section>
         </div>
 
         <!-- Right Column -->
         <div class="col-span-4 space-y-6">
 
-            <!-- Performance Stats -->
-            <div class="bg-primary text-white rounded-[2rem] p-8 shadow-xl">
-                <h4 class="text-lg font-bold mb-6 flex items-center gap-2">
-                    <span class="material-symbols-outlined">analytics</span>
+            <!-- Annual Schedule Card -->
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                <h4 class="font-bold text-primary text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">calendar_month</span>
+                    {{ current_year }} Schedule
+                </h4>
+
+                {% if existing_schedule %}
+                <!-- Schedule already set -->
+                <div class="space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Mode</span>
+                        <span class="font-bold">{{ existing_schedule.get_schedule_mode_display }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Location</span>
+                        <span class="font-bold">{{ existing_schedule.location }}</span>
+                    </div>
+                    {% if existing_schedule.schedule_mode == 'RECURRING' %}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">First Date</span>
+                        <span class="font-bold">{{ existing_schedule.first_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Frequency</span>
+                        <span class="font-bold">Every {{ existing_schedule.frequency_weeks }} weeks</span>
+                    </div>
+                    {% endif %}
+                    <div class="mt-4 px-4 py-3 bg-secondary-container/30 rounded-xl text-xs text-on-secondary-container font-medium">
+                        Schedule set. Sessions have been generated for {{ current_year }}.
+                    </div>
+                </div>
+
+                {% else %}
+                <!-- Schedule form -->
+                <div class="space-y-4">
+
+                    <!-- Mode toggle -->
+                    <div class="flex gap-2">
+                        <button onclick="setMode('recurring')" id="mode-recurring"
+                            class="flex-1 py-2 text-xs font-bold rounded-xl bg-primary text-white transition-colors">
+                            Recurring
+                        </button>
+                        <button onclick="setMode('fixed')" id="mode-fixed"
+                            class="flex-1 py-2 text-xs font-bold rounded-xl bg-surface-container text-on-surface-variant transition-colors">
+                            Fixed Dates
+                        </button>
+                    </div>
+
+                    <!-- Recurring Form -->
+                    <form id="form-recurring" method="POST" action="{% url 'clinic:session_start' %}" class="space-y-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="recurring">
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Session Type</label>
+                            <select name="session_type"
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                                <option value="CLINIC">Clinic Session</option>
+                                <option value="DOMICILIARY">Domiciliary Visit</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Location</label>
+                            <input type="text" name="location" required
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="e.g. Polgolla Clinic Center">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">First Clinic Date</label>
+                            <input type="date" name="first_date" required
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Frequency (weeks)</label>
+                            <select name="frequency_weeks"
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                                <option value="2">Every 2 weeks</option>
+                                <option value="4" selected>Every 4 weeks</option>
+                                <option value="6">Every 6 weeks</option>
+                                <option value="8">Every 8 weeks</option>
+                            </select>
+                        </div>
+                        <button type="submit"
+                            class="w-full py-2.5 rounded-xl bg-secondary text-white text-xs font-bold hover:bg-on-secondary-container transition-colors">
+                            Generate Schedule
+                        </button>
+                    </form>
+
+                    <!-- Fixed Dates Form -->
+                    <form id="form-fixed" method="POST" action="{% url 'clinic:session_start' %}" class="space-y-3 hidden">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="fixed_dates">
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Session Type</label>
+                            <select name="session_type"
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                                <option value="CLINIC">Clinic Session</option>
+                                <option value="DOMICILIARY">Domiciliary Visit</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Location</label>
+                            <input type="text" name="location" required
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                placeholder="e.g. Polgolla Clinic Center">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                                Clinic Dates
+                                <span class="text-on-surface-variant font-normal normal-case ml-1">(comma separated)</span>
+                            </label>
+                            <textarea name="fixed_dates" rows="4" required
+                                class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none font-mono"
+                                placeholder="2026-01-15, 2026-02-19, 2026-03-18"></textarea>
+                            <p class="text-[10px] text-on-surface-variant mt-1">Format: YYYY-MM-DD</p>
+                        </div>
+                        <button type="submit"
+                            class="w-full py-2.5 rounded-xl bg-secondary text-white text-xs font-bold hover:bg-on-secondary-container transition-colors">
+                            Save Schedule
+                        </button>
+                    </form>
+
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Manual Session Card -->
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                <h4 class="font-bold text-primary text-sm uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">add_circle</span>
+                    One-off Session
+                </h4>
+                <p class="text-xs text-on-surface-variant mb-4">For unscheduled domiciliary visits or ad-hoc clinics.</p>
+                <form method="POST" action="{% url 'clinic:session_manual_create' %}" class="space-y-3">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Date</label>
+                        <input type="date" name="session_date" required
+                            value="{{ today }}"
+                            class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Type</label>
+                        <select name="session_type"
+                            class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                            <option value="CLINIC">Clinic Session</option>
+                            <option value="DOMICILIARY">Domiciliary Visit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Location</label>
+                        <input type="text" name="location" required
+                            class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                            placeholder="e.g. Domiciliary visit">
+                    </div>
+                    <button type="submit"
+                        class="w-full py-2.5 rounded-xl bg-surface-container text-on-surface text-xs font-bold hover:bg-surface-container-high transition-colors">
+                        Create Session
+                    </button>
+                </form>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="bg-primary text-white rounded-3xl p-6 shadow-xl">
+                <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">analytics</span>
                     This Month
                 </h4>
-                <div class="space-y-6">
+                <div class="space-y-4">
                     <div class="flex justify-between items-center border-b border-white/10 pb-4">
-                        <span class="text-on-primary-container text-sm">Sessions Held</span>
+                        <span class="text-white/70 text-sm">Sessions Completed</span>
                         <span class="text-3xl font-extrabold">{{ sessions_this_month }}</span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-white/10 pb-4">
-                        <span class="text-on-primary-container text-sm">Pending Sync</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/70 text-sm">Pending Sync</span>
                         <span class="text-3xl font-extrabold
                             {% if unsynced_count > 0 %}text-tertiary-fixed-dim{% else %}text-secondary-fixed{% endif %}">
                             {{ unsynced_count }}
@@ -173,39 +371,33 @@
                 </div>
             </div>
 
-            <!-- Local Sync Queue -->
-            <div class="bg-surface-container-low rounded-3xl p-6">
-                <h4 class="font-bold text-primary mb-4 text-sm uppercase tracking-widest">Local Sync Queue</h4>
-                {% if unsynced_count > 0 %}
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-tertiary-fixed-dim mt-0.5">hourglass_top</span>
-                    <div>
-                        <p class="text-xs font-bold text-on-surface">{{ unsynced_count }} records pending</p>
-                        <p class="text-[10px] text-on-surface-variant">Waiting for connection...</p>
-                    </div>
-                </div>
-                {% else %}
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                    <div>
-                        <p class="text-xs font-bold text-on-surface">All records synced</p>
-                        <p class="text-[10px] text-on-surface-variant">No pending items</p>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-
         </div>
     </div>
 </div>
 
 <script>
-window.addEventListener('offline', () => {
-    document.getElementById('offline-banner').classList.remove('hidden');
-});
-window.addEventListener('online', () => {
-    document.getElementById('offline-banner').classList.add('hidden');
-});
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function showTab(name) {
+    ['upcoming', 'completed'].forEach(t => {
+        document.getElementById('panel-' + t).classList.toggle('hidden', t !== name);
+        const btn = document.getElementById('tab-' + t);
+        btn.classList.toggle('border-primary', t === name);
+        btn.classList.toggle('text-primary', t === name);
+        btn.classList.toggle('border-transparent', t !== name);
+        btn.classList.toggle('text-on-surface-variant', t !== name);
+    });
+}
+
+// ── Schedule mode toggle ──────────────────────────────────────────────────────
+function setMode(mode) {
+    const isRecurring = mode === 'recurring';
+    document.getElementById('form-recurring').classList.toggle('hidden', !isRecurring);
+    document.getElementById('form-fixed').classList.toggle('hidden', isRecurring);
+    document.getElementById('mode-recurring').className =
+        `flex-1 py-2 text-xs font-bold rounded-xl transition-colors ${isRecurring ? 'bg-primary text-white' : 'bg-surface-container text-on-surface-variant'}`;
+    document.getElementById('mode-fixed').className =
+        `flex-1 py-2 text-xs font-bold rounded-xl transition-colors ${!isRecurring ? 'bg-primary text-white' : 'bg-surface-container text-on-surface-variant'}`;
+}
 </script>
 
 {% endblock %}

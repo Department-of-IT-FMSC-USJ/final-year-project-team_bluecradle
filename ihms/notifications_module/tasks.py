@@ -136,3 +136,67 @@ def send_sync_confirm(user_id, record_count):
         infant=None,
     )
     send_push_notification.delay(notification.id)
+
+@shared_task
+def send_clinic_reminders():
+    """
+    Daily scheduled task.
+    Fires CLINIC_REMINDER to parents whose infant's PHM has a clinic
+    session in exactly 3 days or exactly 1 day.
+    Queries ClinicSession with status=UPCOMING — only works correctly
+    now that sessions are pre-generated from ClinicSchedule.
+    """
+    from datetime import timedelta
+    from clinic_module.models import ClinicSession
+    from accounts_module.models import Parent
+    from infants_module.models import Infant
+    from .models import NotificationLog
+
+    today = timezone.now().date()
+
+    for days_ahead in [3, 1]:
+        target_date = today + timedelta(days=days_ahead)
+
+        sessions = ClinicSession.objects.filter(
+            session_date=target_date,
+            status='UPCOMING',
+        ).select_related('phm')
+
+        for session in sessions:
+            infants = Infant.objects.filter(
+                registered_phm=session.phm
+            )
+
+            for infant in infants:
+                guardian = Parent.objects.filter(
+                    phn=infant.phn
+                ).first()
+
+                if not guardian:
+                    continue
+
+                already_reminded = NotificationLog.objects.filter(
+                    recipient=guardian.user,
+                    notification_type=NotificationLog.NotificationType.CLINIC_REMINDER,
+                    infant=infant,
+                    created_at__date=today,
+                ).exists()
+
+                if already_reminded:
+                    continue
+
+                days_label = 'tomorrow' if days_ahead == 1 else 'in 3 days'
+
+                notification = NotificationLog.objects.create(
+                    recipient=guardian.user,
+                    notification_type=NotificationLog.NotificationType.CLINIC_REMINDER,
+                    title='Upcoming Clinic Reminder',
+                    body=(
+                        f'Reminder: {infant.full_name}\'s clinic session is '
+                        f'{days_label} on '
+                        f'{session.session_date.strftime("%d %B %Y")} '
+                        f'at {session.location}. Please attend on time.'
+                    ),
+                    infant=infant,
+                )
+                send_push_notification.delay(notification.id)

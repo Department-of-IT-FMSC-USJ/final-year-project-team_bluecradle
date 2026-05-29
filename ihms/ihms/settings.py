@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sessions.backends.db',
     'rest_framework',
     'core_module',
     'accounts_module',
@@ -153,9 +154,15 @@ VAPID_ADMIN_EMAIL = config('VAPID_ADMIN_EMAIL')
 CELERY_BEAT_SCHEDULE = {
     'check-defaulters-daily': {
         'task': 'notifications_module.tasks.check_defaulters',
-        'schedule': crontab(hour=5, minute=0),  # runs every day at 5:00 AM
+        'schedule': crontab(hour=5, minute=0),
+    },
+    'send-clinic-reminders-daily': {
+        'task': 'notifications_module.tasks.send_clinic_reminders',
+        'schedule': crontab(hour=5, minute=30),
     },
 }
 
 # Session expires when browser is closed
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
