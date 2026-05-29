@@ -1,0 +1,193 @@
+{% extends 'clinic_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1200px]">
+
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-6">
+        <div>
+            <nav class="flex items-center gap-2 text-xs text-on-surface-variant mb-1">
+                <a href="{% url 'clinic:dashboard' %}" class="hover:text-primary">Dashboard</a>
+                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                <span class="text-primary font-semibold">Alerts & Notifications</span>
+            </nav>
+            <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight mb-2">Alerts & Notifications</h1>
+            <p class="text-on-surface-variant font-medium">Monitoring clinical risks and administrative updates across your sector.</p>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex flex-wrap gap-3 mb-8">
+        <a href="{% url 'clinic:alerts' %}">
+            <button class="px-6 py-2.5 {% if filter_type == 'all' %}bg-primary text-white shadow-md{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-surface-container{% endif %} rounded-full font-semibold text-sm transition-all">
+                All ({{ total_count }})
+            </button>
+        </a>
+        <a href="{% url 'clinic:alerts' %}?filter=critical">
+            <button class="px-6 py-2.5 {% if filter_type == 'critical' %}bg-error text-white shadow-md{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-error-container hover:text-on-error-container{% endif %} rounded-full font-semibold text-sm transition-all flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-error {% if filter_type == 'critical' %}bg-white{% endif %}"></span>
+                Critical ({{ ml_alerts.count }})
+            </button>
+        </a>
+        <a href="{% url 'clinic:alerts' %}?filter=defaulters">
+            <button class="px-6 py-2.5 {% if filter_type == 'defaulters' %}bg-tertiary text-white shadow-md{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-tertiary-fixed{% endif %} rounded-full font-semibold text-sm transition-all flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+                Defaulters ({{ defaulter_alerts.count }})
+            </button>
+        </a>
+        <a href="{% url 'clinic:alerts' %}?filter=missed">
+            <button class="px-6 py-2.5 {% if filter_type == 'missed' %}bg-secondary text-white shadow-md{% else %}bg-surface-container-lowest text-on-surface border border-outline-variant/30 hover:bg-secondary-container{% endif %} rounded-full font-semibold text-sm transition-all flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                Missed Visits ({{ missed_visits|length }})
+            </button>
+        </a>
+    </div>
+
+    <!-- Alert Cards -->
+    <div class="space-y-4">
+
+        <!-- ML Risk Alerts (Critical) -->
+        {% if filter_type == 'all' or filter_type == 'critical' %}
+        {% for ml in ml_alerts %}
+        <article class="bg-surface-container-lowest rounded-xl border-l-[6px] {% if ml.risk_level == 'SAM' %}border-error{% else %}border-tertiary-fixed-dim{% endif %} shadow-sm p-6 hover:shadow-md transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined {% if ml.risk_level == 'SAM' %}text-error{% else %}text-tertiary-fixed-dim{% endif %}"
+                          style="font-variation-settings: 'FILL' 1;">
+                        {% if ml.risk_level == 'SAM' %}ecg_heart{% else %}trending_down{% endif %}
+                    </span>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest {% if ml.risk_level == 'SAM' %}text-error bg-error-container{% else %}text-on-tertiary-fixed-variant bg-tertiary-fixed{% endif %} px-2 py-0.5 rounded">
+                            {% if ml.risk_level == 'SAM' %}Critical Risk{% else %}Growth Warning{% endif %}
+                        </span>
+                        <h3 class="text-xl font-bold text-primary mt-1">{{ ml.risk_level }} risk (ML Predicted)</h3>
+                    </div>
+                </div>
+                <span class="text-xs font-medium text-on-surface-variant">{{ ml.assessed_at|date:"d M Y" }}</span>
+            </div>
+            <div class="flex gap-4 items-center mb-4">
+                <div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center font-bold text-primary">
+                    {{ ml.infant.full_name|slice:":2"|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-on-surface">{{ ml.infant.full_name }}</p>
+                    <p class="text-sm text-on-surface-variant">PHN: {{ ml.infant.phn }}</p>
+                </div>
+            </div>
+            <p class="text-on-surface mb-4 leading-relaxed text-sm">
+                ML model indicates <strong>{{ ml.confidence_score|floatformat:0 }}% probability</strong> of {{ ml.risk_level }}.
+                P(SAM): {{ ml.prob_sam|floatformat:2 }} — P(MAM): {{ ml.prob_mam|floatformat:2 }} — P(Normal): {{ ml.prob_normal|floatformat:2 }}
+            </p>
+            <div class="flex justify-end border-t border-outline-variant/10 pt-4">
+                <a href="{% url 'clinic:infant_detail' ml.infant.phn %}" class="text-primary font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View Infant Profile <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        {% if filter_type == 'critical' %}
+        <div class="text-center py-12 text-on-surface-variant">
+            <span class="material-symbols-outlined text-5xl block mb-3 text-outline-variant">check_circle</span>
+            <p class="font-bold">No critical ML risk alerts.</p>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        <!-- Defaulter Alerts -->
+        {% if filter_type == 'all' or filter_type == 'defaulters' %}
+        {% for d in defaulter_alerts %}
+        <article class="bg-surface-container-lowest rounded-xl border-l-[6px] border-tertiary-fixed-dim shadow-sm p-6 hover:shadow-md transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">event_busy</span>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-error bg-error-container px-2 py-0.5 rounded">Overdue</span>
+                        <h3 class="text-xl font-bold text-primary mt-1">Overdue Vaccine: {{ d.get_vaccine_display }}</h3>
+                    </div>
+                </div>
+                <span class="text-xs font-medium text-on-surface-variant">{{ d.defaulter_days_overdue }} days overdue</span>
+            </div>
+            <div class="flex gap-4 items-center mb-4">
+                <div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center font-bold text-primary">
+                    {{ d.infant.full_name|slice:":2"|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-on-surface">{{ d.infant.full_name }}</p>
+                    <p class="text-sm text-on-surface-variant">PHN: {{ d.infant.phn }}</p>
+                </div>
+            </div>
+            <p class="text-on-surface mb-4 leading-relaxed text-sm">
+                Scheduled date was {{ d.scheduled_date|date:"d M Y"|default:"unknown" }}.
+                Grace period: {{ d.grace_period_days }} days. Now {{ d.defaulter_days_overdue }} days past deadline.
+            </p>
+            <div class="flex justify-end border-t border-outline-variant/10 pt-4">
+                <a href="{% url 'clinic:infant_detail' d.infant.phn %}" class="text-primary font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View Infant Profile <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        {% if filter_type == 'defaulters' %}
+        <div class="text-center py-12 text-on-surface-variant">
+            <span class="material-symbols-outlined text-5xl block mb-3 text-outline-variant">check_circle</span>
+            <p class="font-bold">No vaccination defaulters.</p>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        <!-- Missed Visit Alerts -->
+        {% if filter_type == 'all' or filter_type == 'missed' %}
+        {% for mv in missed_visits %}
+        <article class="bg-surface-container-lowest rounded-xl border-l-[6px] border-secondary shadow-sm p-6 hover:shadow-md transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">Missed Visit</span>
+                        <h3 class="text-xl font-bold text-primary mt-1">Missed clinic follow-up</h3>
+                    </div>
+                </div>
+                <span class="text-xs font-medium text-on-surface-variant">{{ mv.days_since }} days ago</span>
+            </div>
+            <div class="flex gap-4 items-center mb-4">
+                <div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center font-bold text-primary">
+                    {{ mv.infant.full_name|slice:":2"|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-on-surface">{{ mv.infant.full_name }}</p>
+                    <p class="text-sm text-on-surface-variant">PHN: {{ mv.infant.phn }}</p>
+                </div>
+            </div>
+            <p class="text-on-surface mb-4 leading-relaxed text-sm">
+                Last visit was {{ mv.last_visit|date:"d M Y" }} — {{ mv.days_since }} days ago. Scheduled monthly check may have been missed.
+            </p>
+            <div class="flex justify-end border-t border-outline-variant/10 pt-4">
+                <a href="{% url 'clinic:infant_detail' mv.infant.phn %}" class="text-primary font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View Infant Profile <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+        {% if filter_type == 'missed' and missed_visits|length == 0 %}
+        <div class="text-center py-12 text-on-surface-variant">
+            <span class="material-symbols-outlined text-5xl block mb-3 text-outline-variant">check_circle</span>
+            <p class="font-bold">No missed visits detected.</p>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- Empty state for 'all' -->
+        {% if filter_type == 'all' and total_count == 0 %}
+        <div class="text-center py-16 text-on-surface-variant">
+            <span class="material-symbols-outlined text-6xl block mb-4 text-outline-variant">notifications_off</span>
+            <h3 class="font-headline text-xl font-bold mb-2">No alerts</h3>
+            <p class="text-sm">All infants are on track. No clinical actions required.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

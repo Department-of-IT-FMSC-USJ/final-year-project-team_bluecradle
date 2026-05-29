@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+from decouple import config
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,7 +45,8 @@ INSTALLED_APPS = [
     'infants_module',
     'clinic_module',
     'ml_module',
-    'audit_module'
+    'audit_module',
+    'notifications_module',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +72,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'clinic_module.context_processors.unsynced_count',
+                'clinic_module.context_processors.vapid_key',
             ],
         },
     },
@@ -135,3 +139,20 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# ───────────────────────────────────────────
+# VAPID Keys — Web Push Notifications
+# ───────────────────────────────────────────
+VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY')
+VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY')
+VAPID_ADMIN_EMAIL = config('VAPID_ADMIN_EMAIL')
+
+# ───────────────────────────────────────────
+# Trigger notifications daily
+# ───────────────────────────────────────────
+CELERY_BEAT_SCHEDULE = {
+    'check-defaulters-daily': {
+        'task': 'notifications_module.tasks.check_defaulters',
+        'schedule': crontab(hour=5, minute=0),  # runs every day at 5:00 AM
+    },
+}

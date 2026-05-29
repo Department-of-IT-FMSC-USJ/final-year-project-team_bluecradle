@@ -13,6 +13,8 @@ urlpatterns = [
     path('phm/infants/<str:phn>/immunization/', views.immunization, name='immunization'),
     path('phm/reports/h523/', views.h523_report, name='h523_report'),
     path('phm/sessions/', views.session_start, name='session_start'),
+    path('phm/reports/h523/download/', views.h523_download_pdf, name='h523_download'),
+    path('phm/alerts/', views.alerts, name='alerts'),
 
     # API endpoints
     path('sessions/', views.ClinicSessionListCreateView.as_view(), name='session-list-create'),

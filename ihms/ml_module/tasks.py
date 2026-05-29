@@ -47,6 +47,23 @@ def run_ml_risk_assessment(self, infant_phn, growth_record_id):
                 }
             )
 
+            # ── Notify PHM if risk is SAM or MAM ─────────────────────────
+            if result['risk_level'] in ['SAM', 'MAM']:
+                from notifications_module.models import NotificationLog
+                from notifications_module.tasks import send_push_notification
+
+                notification = NotificationLog.objects.create(
+                    recipient=infant.registered_phm.user,
+                    notification_type=NotificationLog.NotificationType.ML_RISK,
+                    title=f'ML Risk Alert — {result["risk_level"]}',
+                    body=(
+                        f'{infant.full_name} (PHN: {infant.phn}) has been flagged as '
+                        f'{result["risk_level"]} with {round(result["confidence_score"] * 100)}% confidence.'
+                    ),
+                    infant=infant,
+                )
+                send_push_notification.delay(notification.id)
+
         return {'status': 'success', 'risk_level': result['risk_level']}
 
     except Exception as exc:
