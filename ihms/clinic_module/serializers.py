@@ -198,3 +198,68 @@ class FHBAtomicEventSerializer(serializers.ModelSerializer):
             'synced_at',
             'created_at',
         ]
+
+from .models import ScheduledVaccination
+
+class ScheduledVaccinationSerializer(serializers.ModelSerializer):
+
+    administered_by_name = serializers.CharField(
+        source='administered_by.get_full_name',
+        read_only=True
+    )
+
+    class Meta:
+        model = ScheduledVaccination
+        fields = [
+            'id',
+            'vaccine_name',
+            'due_date',
+            'status',
+            'date_given',
+            'administered_by',
+            'administered_by_name',
+            'notes',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'vaccine_name',
+            'due_date',
+            'administered_by',
+            'administered_by_name',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class ScheduledVaccinationUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used only for PATCH — PHM updating status.
+    Validates business rules around status transitions.
+    """
+
+    class Meta:
+        model = ScheduledVaccination
+        fields = [
+            'status',
+            'date_given',
+            'notes',
+        ]
+
+    def validate(self, attrs):
+        status = attrs.get('status')
+
+        if status == ScheduledVaccination.Status.ADMINISTERED:
+            if not attrs.get('date_given'):
+                raise serializers.ValidationError(
+                    {'date_given': 'date_given is required when marking as administered.'}
+                )
+
+        if status == ScheduledVaccination.Status.CONTRAINDICATED:
+            if not attrs.get('notes'):
+                raise serializers.ValidationError(
+                    {'notes': 'A reason is required when marking as contraindicated.'}
+                )
+
+        return attrs

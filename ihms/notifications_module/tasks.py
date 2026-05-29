@@ -200,3 +200,81 @@ def send_clinic_reminders():
                     infant=infant,
                 )
                 send_push_notification.delay(notification.id)
+
+@shared_task
+def flag_defaulted_vaccinations():
+    """
+    Daily scheduled task.
+    1. Flips ScheduledVaccination status PENDING → DEFAULTED
+       where due_date has passed.
+    2. Notifies PHM (DEFAULTER) and Parent (VAC_REMINDER) for each.
+    """
+    from clinic_module.models import ScheduledVaccination
+    from accounts_module.models import Parent
+    from .models import NotificationLog
+
+    today = timezone.now().date()
+
+    # Step 1 — flip overdue PENDING records to DEFAULTED
+    overdue = ScheduledVaccination.objects.filter(
+        due_date__lt=today,
+        status=ScheduledVaccination.Status.PENDING,
+    ).select_related(
+        'infant',
+        'infant__registered_phm__user',
+    )
+
+    for vaccination in overdue:
+        vaccination.status = ScheduledVaccination.Status.DEFAULTED
+        vaccination.save(update_fields=['status', 'updated_at'])
+
+        infant = vaccination.infant
+        days_overdue = (today - vaccination.due_date).days
+
+        # ── DEFAULTER → PHM ──────────────────────────────────────
+        phm_user = infant.registered_phm.user
+
+        already_notified = NotificationLog.objects.filter(
+            recipient=phm_user,
+            notification_type=NotificationLog.NotificationType.DEFAULTER,
+            infant=infant,
+            created_at__date=today,
+        ).exists()
+
+        if not already_notified:
+            phm_notification = NotificationLog.objects.create(
+                recipient=phm_user,
+                notification_type=NotificationLog.NotificationType.DEFAULTER,
+                title='Vaccination Defaulter Alert',
+                body=(
+                    f'{infant.full_name} (PHN: {infant.phn}) — '
+                    f'{vaccination.vaccine_name} overdue by {days_overdue} days.'
+                ),
+                infant=infant,
+            )
+            send_push_notification.delay(phm_notification.id)
+
+        # ── VAC_REMINDER → Parent ─────────────────────────────────
+        guardian = Parent.objects.filter(phn=infant.phn).first()
+
+        if guardian:
+            already_reminded = NotificationLog.objects.filter(
+                recipient=guardian.user,
+                notification_type=NotificationLog.NotificationType.VAC_REMINDER,
+                infant=infant,
+                created_at__date=today,
+            ).exists()
+
+            if not already_reminded:
+                parent_notification = NotificationLog.objects.create(
+                    recipient=guardian.user,
+                    notification_type=NotificationLog.NotificationType.VAC_REMINDER,
+                    title='Vaccination Overdue',
+                    body=(
+                        f'{infant.full_name}\'s {vaccination.vaccine_name} vaccination '
+                        f'is overdue by {days_overdue} days. '
+                        f'Please visit your nearest clinic as soon as possible.'
+                    ),
+                    infant=infant,
+                )
+                send_push_notification.delay(parent_notification.id)
