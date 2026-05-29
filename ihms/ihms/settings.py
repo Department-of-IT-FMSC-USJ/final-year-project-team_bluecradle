@@ -171,6 +171,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'notifications_module.tasks.send_clinic_reminders',
         'schedule': crontab(hour=5, minute=30),
     },
+    # new entry
+    'flag-defaulted-vaccinations-daily': {
+        'task': 'notifications_module.tasks.flag_defaulted_vaccinations',
+        'schedule': crontab(hour=5, minute=15),
+    },
 }
 
 # Session expires when browser is closed

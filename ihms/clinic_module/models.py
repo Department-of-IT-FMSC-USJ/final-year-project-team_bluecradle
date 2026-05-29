@@ -227,6 +227,51 @@ class ImmunizationEvent(models.Model):
     def __str__(self):
         return f"{self.infant} — {self.vaccine} — {self.dose_status}"
     
+class ScheduledVaccination(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        ADMINISTERED = 'ADMINISTERED', 'Administered'
+        DEFAULTED = 'DEFAULTED', 'Defaulted'
+        CONTRAINDICATED = 'CONTRAINDICATED', 'Contraindicated'
+
+    infant = models.ForeignKey(
+        'infants_module.Infant',
+        on_delete=models.PROTECT,
+        related_name='scheduled_vaccinations'
+    )
+
+    vaccine_name = models.CharField(max_length=100)
+    due_date = models.DateField()
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING
+    )
+
+    # Only filled when administered
+    date_given = models.DateField(null=True, blank=True)
+    administered_by = models.ForeignKey(
+        'accounts_module.User',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='administered_scheduled_vaccines'
+    )
+
+    # Required when CONTRAINDICATED — PHM records the medical reason
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date']
+        unique_together = ['infant', 'vaccine_name']
+
+    def __str__(self):
+        return f"{self.infant} — {self.vaccine_name} — {self.status}"
+    
 class FHBAtomicEvent(models.Model):
 
     EVENT_TYPE_CHOICES = [

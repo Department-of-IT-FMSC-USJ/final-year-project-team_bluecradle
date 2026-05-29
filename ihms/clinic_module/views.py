@@ -3,14 +3,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent, ClinicSchedule
-from .serializers import ClinicSessionSerializer, GrowthRecordSerializer, ImmunizationEventSerializer, FHBAtomicEventSerializer
+from .models import GrowthRecord, ImmunizationEvent, ClinicSession, FHBAtomicEvent, ClinicSchedule, ScheduledVaccination
+from .serializers import ClinicSessionSerializer, GrowthRecordSerializer, ImmunizationEventSerializer, FHBAtomicEventSerializer, ScheduledVaccinationSerializer, ScheduledVaccinationUpdateSerializer
 from django.contrib.auth.decorators import login_required
 from infants_module.models import Infant
 from django.db import models
 from datetime import date
 from django.utils import timezone
-from accounts_module.permission import IsPHM
+from accounts_module.permission import IsPHM, IsParent
 from .reporting_utils import generate_h523_data
 from ml_module.models import MLRiskAssessment
 
@@ -19,6 +19,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
+from clinic_module.models import ScheduledVaccination
 
 @login_required
 def phm_dashboard(request):
@@ -262,6 +263,15 @@ def infant_detail(request, phn):
         infant=infant
     ).order_by('scheduled_date')
 
+    scheduled_vaccinations = ScheduledVaccination.objects.filter(
+        infant=infant
+    ).order_by('due_date')
+
+    vac_pending = scheduled_vaccinations.filter(status=ScheduledVaccination.Status.PENDING).count()
+    vac_administered = scheduled_vaccinations.filter(status=ScheduledVaccination.Status.ADMINISTERED).count()
+    vac_defaulted = scheduled_vaccinations.filter(status=ScheduledVaccination.Status.DEFAULTED).count()
+    vac_contraindicated = scheduled_vaccinations.filter(status=ScheduledVaccination.Status.CONTRAINDICATED).count()
+
     age_days = (today - infant.date_of_birth).days
     if age_days < 30:
         age_display = f"{age_days}d"
@@ -283,6 +293,11 @@ def infant_detail(request, phn):
         'growth_records': growth_records,
         'latest_ml': latest_ml,
         'immunization_events': immunization_events,
+        'scheduled_vaccinations': scheduled_vaccinations,
+        'vac_pending': vac_pending,
+        'vac_administered': vac_administered,
+        'vac_defaulted': vac_defaulted,
+        'vac_contraindicated': vac_contraindicated,
         'active_tab': tab,
         'active_nav': 'vaccinations' if tab == 'vaccinations' else 'growth' if tab == 'growth' else 'infants',
     }
@@ -894,3 +909,66 @@ class H523ReportView(APIView):
     
 import csv
 from django.http import HttpResponse
+
+class ScheduledVaccinationListView(APIView):
+    permission_classes = [IsPHM | IsParent]
+
+    def get(self, request, phn):
+        infant = get_object_or_404(Infant, phn=phn)
+
+        # Ownership check
+        if hasattr(request.user, 'phm_profile'):
+            if infant.registered_phm != request.user.phm_profile:
+                return Response(
+                    {'detail': 'You do not have access to this infant.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        elif hasattr(request.user, 'parent_profile'):
+            if request.user.parent_profile.phn != phn:
+                return Response(
+                    {'detail': 'You do not have access to this infant.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        vaccinations = ScheduledVaccination.objects.filter(infant=infant)
+        serializer = ScheduledVaccinationSerializer(vaccinations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ScheduledVaccinationUpdateView(APIView):
+    permission_classes = [IsPHM]
+
+    def patch(self, request, phn, pk):
+        infant = get_object_or_404(Infant, phn=phn)
+
+        # PHM ownership check
+        if infant.registered_phm != request.user.phm_profile:
+            return Response(
+                {'detail': 'You do not have access to this infant.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        vaccination = get_object_or_404(
+            ScheduledVaccination,
+            pk=pk,
+            infant=infant
+        )
+
+        serializer = ScheduledVaccinationUpdateSerializer(
+            vaccination,
+            data=request.data,
+            partial=True
+        )
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.validated_data.get('status') == ScheduledVaccination.Status.ADMINISTERED:
+            serializer.save(administered_by=request.user)
+        else:
+            serializer.save()
+
+        return Response(
+            ScheduledVaccinationSerializer(vaccination).data,
+            status=status.HTTP_200_OK
+        )

@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from infants_module.models import Infant
 from clinic_module.models import ClinicSession, GrowthRecord, ImmunizationEvent, FHBAtomicEvent
 from django.db.models.signals import post_save
+from clinic_module.models import ScheduledVaccination
 
 def _compute_hash(payload: dict) -> str:
     raw = json.dumps(payload, sort_keys=True, default=str)
@@ -58,4 +59,8 @@ def audit_immunization_event(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=FHBAtomicEvent)
 def audit_fhb_atomic_event(sender, instance, created, **kwargs):
+    _write_audit(instance, created)
+
+@receiver(post_save, sender=ScheduledVaccination)
+def audit_scheduled_vaccination(sender, instance, created, **kwargs):
     _write_audit(instance, created)

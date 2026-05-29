@@ -294,93 +294,78 @@
     <!-- Tab: Vaccinations -->
     <div id="content-vaccinations" class="hidden">
         <div class="grid grid-cols-12 gap-8">
-            <div class="col-span-12 lg:col-span-8 space-y-6">
-                <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-headline text-lg font-bold text-primary">Vaccination Record</h3>
+
+            <!-- Table -->
+            <div class="col-span-12 lg:col-span-8">
+                <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+                        <h3 class="font-headline text-lg font-bold text-primary">Vaccination Schedule</h3>
                         <a href="{% url 'clinic:immunization' infant.phn %}" class="text-xs font-bold text-secondary hover:underline">Record Vaccine</a>
                     </div>
-                    <div class="grid grid-cols-3 gap-3">
-                        {% for imm in immunization_events %}
-                        <div class="rounded-2xl p-4 border text-center
-                            {% if imm.dose_status == 'ADMINISTERED' %}bg-secondary-container/20 border-secondary-container/30
-                            {% elif imm.dose_status == 'DEFAULTED' %}bg-error-container/20 border-error-container/30
-                            {% else %}bg-surface-container border-outline-variant/20{% endif %}">
-                            <p class="text-xs font-bold text-on-surface">{{ imm.get_vaccine_display }}</p>
-                            {% if imm.date_administered %}
-                            <p class="text-[10px] text-on-surface-variant mt-1">{{ imm.date_administered|date:"d M Y" }}</p>
-                            {% endif %}
-                            <p class="text-[10px] font-bold mt-1 {% if imm.dose_status == 'ADMINISTERED' %}text-secondary{% elif imm.dose_status == 'DEFAULTED' %}text-error{% else %}text-on-surface-variant{% endif %}">
-                                {{ imm.get_dose_status_display }}
-                            </p>
-                            {% if imm.is_defaulter %}
-                            <p class="text-[10px] text-error font-bold">{{ imm.defaulter_days_overdue }}d overdue</p>
-                            {% endif %}
-                        </div>
-                        {% empty %}
-                        <div class="col-span-3 text-center py-8 text-sm text-on-surface-variant">No vaccination records yet.</div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="bg-primary-container text-on-primary-container rounded-2xl p-6">
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="material-symbols-outlined text-secondary-container">info</span>
-                        <h3 class="font-headline text-lg font-bold">National Immunization Schedule</h3>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">At Birth</span>
-                            <span class="text-[10px] font-bold">BCG, OPV (0), Hep B</span>
-                        </div>
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">2 Months</span>
-                            <span class="text-[10px] font-bold">Pentavalent (1), OPV (1), fIPV (1), PCV (1), Rota (1)</span>
-                        </div>
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">4 Months</span>
-                            <span class="text-[10px] font-bold">Pentavalent (2), OPV (2), fIPV (2), PCV (2), Rota (2)</span>
-                        </div>
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">6 Months</span>
-                            <span class="text-[10px] font-bold">Pentavalent (3), OPV (3), PCV (3)</span>
-                        </div>
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">9 Months</span>
-                            <span class="text-[10px] font-bold">MR (1)</span>
-                        </div>
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">12 Months</span>
-                            <span class="text-[10px] font-bold">Live JE</span>
-                        </div>
-                        <div class="flex items-center gap-4 bg-primary/20 p-3 rounded-xl">
-                            <span class="w-20 text-xs font-bold text-on-primary-container/80 uppercase shrink-0">18 Months</span>
-                            <span class="text-[10px] font-bold">DTP Booster, OPV Booster, MR (2)</span>
-                        </div>
-                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Vaccine</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Due Date</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date Given</th>
+                                <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for vac in scheduled_vaccinations %}
+                            <tr class="hover:bg-surface transition-colors">
+                                <td class="px-8 py-5 font-medium text-sm">{{ vac.vaccine_name }}</td>
+                                <td class="px-8 py-5 text-sm text-on-surface-variant">{{ vac.due_date|date:"d M Y" }}</td>
+                                <td class="px-8 py-5 text-sm text-on-surface-variant">
+                                    {{ vac.date_given|date:"d M Y"|default:"—" }}
+                                </td>
+                                <td class="px-8 py-5">
+                                    {% if vac.status == 'ADMINISTERED' %}
+                                        <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold uppercase">Administered</span>
+                                    {% elif vac.status == 'DEFAULTED' %}
+                                        <span class="px-3 py-1 rounded-full bg-error-container/30 text-error text-[10px] font-bold uppercase">Defaulted</span>
+                                    {% elif vac.status == 'CONTRAINDICATED' %}
+                                        <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">Contraindicated</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-8 py-8 text-center text-sm text-on-surface-variant">No vaccination schedule found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
+            <!-- Summary Card -->
             <div class="col-span-12 lg:col-span-4">
                 <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
                     <h3 class="font-headline text-lg font-bold text-primary mb-6">Vaccination Summary</h3>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         <div class="p-4 rounded-xl bg-secondary-container/20 border-l-4 border-secondary">
-                            <p class="text-xs text-secondary font-bold mb-1">TOTAL RECORDED</p>
-                            <p class="text-3xl font-bold font-headline text-secondary">{{ immunization_events|length }}</p>
+                            <p class="text-xs text-secondary font-bold mb-1">ADMINISTERED</p>
+                            <p class="text-3xl font-bold font-headline text-secondary">{{ vac_administered }}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-surface-container border-l-4 border-outline-variant">
+                            <p class="text-xs text-on-surface-variant font-bold mb-1">PENDING</p>
+                            <p class="text-3xl font-bold font-headline text-on-surface-variant">{{ vac_pending }}</p>
                         </div>
                         <div class="p-4 rounded-xl bg-error-container/20 border-l-4 border-error">
                             <p class="text-xs text-error font-bold mb-1">DEFAULTED</p>
-                            <p class="text-3xl font-bold font-headline text-error">
-                                {% with count=0 %}
-                                {% for imm in immunization_events %}{% if imm.is_defaulter %}{% with count=count|add:1 %}{% endwith %}{% endif %}{% endfor %}
-                                {{ immunization_events|length }}
-                                {% endwith %}
-                            </p>
+                            <p class="text-3xl font-bold font-headline text-error">{{ vac_defaulted }}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-tertiary-fixed-dim/10 border-l-4 border-tertiary-fixed-dim">
+                            <p class="text-xs text-on-tertiary-fixed-variant font-bold mb-1">CONTRAINDICATED</p>
+                            <p class="text-3xl font-bold font-headline text-on-tertiary-fixed-variant">{{ vac_contraindicated }}</p>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
