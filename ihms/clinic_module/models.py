@@ -9,16 +9,33 @@ class ClinicSession(models.Model):
         ('DOMICILIARY', 'Domiciliary Visit'),
     ]
 
+    STATUS_CHOICES = [
+        ('UPCOMING', 'Upcoming'),
+        ('ACTIVE', 'Active'),
+        ('COMPLETED', 'Completed'),
+    ]
+
     phm = models.ForeignKey(
         PHM_User,
         on_delete=models.PROTECT,
         related_name='clinic_sessions'
     )
 
+    # FK to the schedule that generated this session.
+    # Null for manually created sessions and all existing records.
+    schedule = models.ForeignKey(
+        'ClinicSchedule',
+        on_delete=models.SET_NULL,
+        null=True, 
+        blank=True,
+        related_name='sessions'
+    )
+
     session_date = models.DateField()
     session_type = models.CharField(max_length=20, choices=SESSION_TYPE_CHOICES, default='CLINIC')
     location = models.CharField(max_length=200)
     moh_division = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='UPCOMING')
 
     # Flipped to True by the Service Worker after all events
     # in this session have been successfully synced to Django.
@@ -31,7 +48,55 @@ class ClinicSession(models.Model):
         ordering = ['-session_date']
 
     def __str__(self):
-        return f"{self.phm} — {self.session_type} — {self.session_date}"
+        return f"{self.phm} — {self.session_type} — {self.session_date} — {self.status}"
+    
+
+class ClinicSchedule(models.Model):
+
+    SCHEDULE_MODE_CHOICES = [
+        ('RECURRING', 'Recurring — First date + frequency'),
+        ('FIXED_DATES', 'Fixed Dates — Exact date list'),
+    ]
+
+    phm = models.ForeignKey(
+        PHM_User,
+        on_delete=models.PROTECT,
+        related_name='clinic_schedules'
+    )
+
+    year = models.PositiveSmallIntegerField()
+    session_type = models.CharField(
+        max_length=20,
+        choices=ClinicSession.SESSION_TYPE_CHOICES,
+        default='CLINIC'
+    )
+    location = models.CharField(max_length=200)
+    schedule_mode = models.CharField(max_length=20, choices=SCHEDULE_MODE_CHOICES)
+
+    # ── RECURRING mode fields ────────────────────────────────────────────────
+    # First clinic date of the year — system generates subsequent ones
+    # automatically by adding frequency_weeks repeatedly until year end.
+    first_date = models.DateField(null=True, blank=True)
+    frequency_weeks = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text='How many weeks between each session (e.g. 4 = monthly)'
+    )
+
+    # ── FIXED_DATES mode fields ──────────────────────────────────────────────
+    # List of exact dates as ISO strings: ["2026-01-15", "2026-02-19", ...]
+    fixed_dates = models.JSONField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year']
+        # One active schedule per PHM per year
+        unique_together = ['phm', 'year']
+
+    def __str__(self):
+        return f"{self.phm} — {self.year} — {self.schedule_mode}"
+
     
 class GrowthRecord(models.Model):
 
