@@ -156,3 +156,6 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=5, minute=0),  # runs every day at 5:00 AM
     },
 }
+
+# Session expires when browser is closed
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
