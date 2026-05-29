@@ -19,7 +19,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
     path('', include('core_module.urls', namespace='core')),
+
     path('user/', include('accounts_module.urls', namespace='user')),
 
     path('infants/', include('infants_module.urls', namespace='infants')),
@@ -27,6 +29,8 @@ urlpatterns = [
 
     path('clinic/', include('clinic_module.urls', namespace='clinic')),
     path('api/clinic/', include('clinic_module.urls', namespace='clinic')),
+
+    path('api/notifications/', include('notifications_module.urls', namespace='notifications')),
 ]
 
 # Fallback pages

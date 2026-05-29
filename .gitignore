@@ -32,3 +32,6 @@ Thumbs.db
 # IDE-specific files
 .vscode/
 .antigravity/
+
+# .env file for environment variables
+.env

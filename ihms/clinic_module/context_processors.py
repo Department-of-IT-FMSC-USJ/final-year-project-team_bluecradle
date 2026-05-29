@@ -1,4 +1,5 @@
 from .models import FHBAtomicEvent
+from django.conf import settings
 
 def unsynced_count(request):
     if request.user.is_authenticated and hasattr(request.user, 'phm_profile'):
@@ -9,3 +10,8 @@ def unsynced_count(request):
             ).count()
         }
     return {'unsynced_count': 0}
+
+def vapid_key(request):
+    return {
+        'vapid_public_key': getattr(settings, 'VAPID_PUBLIC_KEY', '')
+    }

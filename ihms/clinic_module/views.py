@@ -14,6 +14,12 @@ from accounts_module.permission import IsPHM
 from .reporting_utils import generate_h523_data
 from ml_module.models import MLRiskAssessment
 
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+
 @login_required
 def phm_dashboard(request):
     phm = request.user.phm_profile
@@ -184,6 +190,8 @@ def infant_search(request):
         )
 
     infants = []
+    risk_filter = request.GET.get('filter', None)
+
     for infant in all_infants.order_by('last_name', 'first_name'):
         latest_growth = GrowthRecord.objects.filter(
             infant=infant
@@ -205,7 +213,6 @@ def infant_search(request):
             months = (age_days % 365) // 30
             age_display = f"{years}y {months}m"
 
-        risk_filter = request.GET.get('filter')
         if risk_filter == 'risk':
             # Sort SAM/MAM to top
             infants = sorted(infants, key=lambda x: 
@@ -221,14 +228,15 @@ def infant_search(request):
             'who_classification': latest_growth.who_classification if latest_growth else 'NORMAL',
             'ml_risk': latest_ml.risk_level if latest_ml else 'NORMAL',
         })
-        
+ 
     filter_type = request.GET.get('filter', None)
     context = {
         'title': 'BlueCradle - Infant Search',
         'infants': infants,
         'total_count': all_infants.count(),
         'query': query,
-        'active_nav': 'growth' if filter_type == 'risk' else 'infants',
+        'filter_type': filter_type,
+        'active_nav': 'growth' if filter_type == 'risk' else 'vaccinations' if filter_type == 'defaulters' else 'infants',
     }
     return render(request, 'clinic_module/infant_search.html', context)
 
@@ -266,6 +274,7 @@ def infant_detail(request, phn):
         months = (age_days % 365) // 30
         age_display = f"{years}y {months}m"
 
+    tab = request.GET.get('tab', 'growth')
     context = {
         'title': 'BlueCradle - Infant Detail',
         'infant': infant,
@@ -274,7 +283,8 @@ def infant_detail(request, phn):
         'growth_records': growth_records,
         'latest_ml': latest_ml,
         'immunization_events': immunization_events,
-        'active_nav': 'infants',
+        'active_tab': tab,
+        'active_nav': 'vaccinations' if tab == 'vaccinations' else 'growth' if tab == 'growth' else 'infants',
     }
     return render(request, 'clinic_module/infant_detail.html', context)
 
@@ -466,6 +476,135 @@ def session_start(request):
     }
     return render(request, 'clinic_module/session_start.html', context)
 
+
+@login_required
+def h523_download_pdf(request):
+    from .reporting_utils import generate_h523_data
+    from datetime import datetime
+
+    date_param = request.GET.get('date', None)
+    if date_param:
+        try:
+            target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        except ValueError:
+            target_date = date.today()
+    else:
+        target_date = date.today()
+
+    h523 = generate_h523_data(
+        phm=request.user.phm_profile,
+        target_date=target_date
+    )
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Title
+    elements.append(Paragraph("Form H 523 — Daily Work Return", styles['Title']))
+    elements.append(Spacer(1, 12))
+
+    # Header info
+    header_data = [
+        ['PHM Officer', h523['phm_name']],
+        ['MOH Division', h523['moh_division']],
+        ['Report Date', h523['report_date']],
+    ]
+    header_table = Table(header_data, colWidths=[150, 300])
+    header_table.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 10),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 20))
+
+    # H 523 Matrix
+    data = [
+        ['Service Category', 'FHB Code', 'Count'],
+        ['New Registrations', 'NEW_REG', h523['new_registrations']],
+        ['Growth Monitoring Attendance', 'GM_ATTENDANCE', h523['growth_monitoring_attendance']],
+        ['Vaccinations Administered (EPI 3/79)', 'EPI_VACCINATION', h523['vaccinations_administered']],
+        ['Defaulters Flagged / Missed Clinic', 'MISSED_CLINIC', h523['defaulters_flagged']],
+        ['Postnatal Visits — First 10 Days', 'POSTNATAL_10', h523['postnatal_visits_10_days']],
+        ['Postnatal Visits — 42 Days', 'POSTNATAL_42', h523['postnatal_visits_42_days']],
+        ['Malnutrition / Low Birth Weight Flags', 'MALNUTRITION_FLAG', h523['malnutrition_flags']],
+    ]
+    table = Table(data, colWidths=[280, 130, 80])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#002444')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('ALIGN', (2,0), (2,-1), 'RIGHT'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f0f4f8')]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#c3c6cf')),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 30))
+
+    # Certification
+    elements.append(Paragraph(
+        f"I certify that the above is a true and correct record of work performed on {h523['report_date']}.",
+        styles['Normal']
+    ))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph("_________________________", styles['Normal']))
+    elements.append(Paragraph(f"Signature of PHM Officer: {h523['phm_name']}", styles['Normal']))
+
+    doc.build(elements)
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="H523_{h523["report_date"]}.pdf"'
+    return response
+
+@login_required
+def alerts(request):
+    phm = request.user.phm_profile
+    filter_type = request.GET.get('filter', 'all')
+
+    # ML Risk alerts
+    ml_alerts = MLRiskAssessment.objects.filter(
+        infant__registered_phm=phm,
+        risk_level__in=['SAM', 'MAM']
+    ).select_related('infant').order_by('-assessed_at')
+
+    # Defaulter alerts
+    defaulter_alerts = ImmunizationEvent.objects.filter(
+        infant__registered_phm=phm,
+        is_defaulter=True
+    ).select_related('infant').order_by('-defaulter_days_overdue')
+
+    # Missed visit alerts (no growth record in last 45 days)
+    from datetime import timedelta
+    cutoff = date.today() - timedelta(days=45)
+    all_infants = Infant.objects.filter(registered_phm=phm)
+    missed_visits = []
+    for infant in all_infants:
+        latest = GrowthRecord.objects.filter(infant=infant).order_by('-visit_date').first()
+        if latest and latest.visit_date < cutoff:
+            missed_visits.append({
+                'infant': infant,
+                'last_visit': latest.visit_date,
+                'days_since': (date.today() - latest.visit_date).days
+            })
+
+    context = {
+        'title': 'BlueCradle - Alerts',
+        'active_nav': 'alerts',
+        'ml_alerts': ml_alerts,
+        'defaulter_alerts': defaulter_alerts,
+        'missed_visits': missed_visits,
+        'filter_type': filter_type,
+        'total_count': ml_alerts.count() + defaulter_alerts.count() + len(missed_visits),
+    }
+    return render(request, 'clinic_module/alerts.html', context)
+
+
 class ClinicSessionListCreateView(APIView):
     permission_classes = [IsPHM]
 
@@ -621,3 +760,6 @@ class H523ReportView(APIView):
             target_date=target_date
         )
         return Response(h523_data, status=status.HTTP_200_OK)
+    
+import csv
+from django.http import HttpResponse

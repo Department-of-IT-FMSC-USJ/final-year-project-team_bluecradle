@@ -112,7 +112,7 @@ def register_parent(request):
                             'form': form
                         })
 
-                    if hasattr(user, 'guardian_profile'):
+                    if hasattr(user, 'parent_profile'):
                         # This account already has a Parent profile — can't register twice
                         form.add_error('email', 'This account already has a Parent profile registered.')
                         return render(request, 'accounts_module/register_parent.html', {
@@ -225,7 +225,7 @@ def role_redirect(request):
 
     if hasattr(user, 'phm_profile'):
         roles.append(UserRole.PHM)
-    if hasattr(user, 'guardian_profile'):
+    if hasattr(user, 'parent_profile'):
         roles.append(UserRole.PARENT)
     if hasattr(user, 'moh_profile'):
         roles.append(UserRole.MOH)

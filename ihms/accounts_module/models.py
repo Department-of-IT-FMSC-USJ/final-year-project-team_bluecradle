@@ -34,6 +34,7 @@ class PHM_User(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    push_subscription = models.JSONField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f'{self.full_name} - {self.moh_division}'
@@ -44,13 +45,14 @@ class Parent(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name='guardian_profile'   # ⚠️ MUST be guardian_profile — Minoli's permission.py checks this exact name
+        related_name='parent_profile'   # ⚠️ MUST be parent_profile — Minoli's permission.py checks this exact name
     )
     full_name = models.CharField(max_length=200)
     phn = models.CharField(max_length=50, unique=True)        # Personal Health Number from physical CHDR booklet
     contact_no = models.CharField(max_length=10, blank=True, null=True)   # Optional
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    push_subscription = models.JSONField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f'{self.full_name} - PHN: {self.phn}'

@@ -3,17 +3,41 @@
 
 {% block body_content %}
 <div class="p-8 max-w-[1600px]">
-    <div class="flex items-center gap-4">
-        <div>
-            <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
-                <a href="{% url 'clinic:dashboard' %}" class="hover:text-primary">Dashboard</a>
-                <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-semibold">H 523 Report</span>
-            </nav>
-            <h2 class="text-xl font-extrabold text-primary font-headline">Daily Work Return — H 523</h2>
-            <p class="text-xs text-on-surface-variant font-medium">{{ h523.report_date }}</p>
-        </div>
+    <div class="flex justify-between items-end mb-6">
+    <div>
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'clinic:dashboard' %}" class="hover:text-primary">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">H 523 Report</span>
+        </nav>
+        <h2 class="text-xl font-extrabold text-primary font-headline">Daily Work Return — H 523</h2>
+        <p class="text-xs text-on-surface-variant font-medium">{{ h523.report_date }}</p>
     </div>
+    <div class="flex items-center gap-3">
+        <!-- Date picker -->
+        <form method="GET" action="{% url 'clinic:h523_report' %}" class="flex items-center gap-2">
+            <input type="date" name="date" value="{{ selected_date }}"
+                class="px-3 py-2 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
+            <button type="submit"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-secondary text-secondary text-sm font-bold hover:bg-secondary/5 transition-all">
+                Load
+            </button>
+        </form>
+        <!-- Download CSV -->
+        <a href="{% url 'clinic:h523_download' %}{% if selected_date %}?date={{ selected_date }}{% endif %}">
+            <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-secondary text-secondary text-sm font-bold hover:bg-secondary/5 transition-all">
+                <span class="material-symbols-outlined text-lg">download</span>
+                Download
+            </button>
+        </a>
+        <!-- Print -->
+        <button onclick="window.print()"
+            class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
+            <span class="material-symbols-outlined text-lg">print</span>
+            Print
+        </button>
+    </div>
+</div>
 
     <div class="grid grid-cols-4 gap-4 p-8">
         <!-- H 523 — Active -->

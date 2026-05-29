@@ -60,3 +60,41 @@ export async function preSyncInfants(db) {
   }
   await tx.done;
 }
+
+export async function syncQueue() {
+  const events = await getUnsyncedEvents();
+  if (events.length === 0) return { synced: 0 };
+
+  let syncedCount = 0;
+
+  for (const event of events) {
+    try {
+      const success = await postEvent(event);
+      if (success) {
+        await markEventSynced(event.local_id);
+        syncedCount++;
+      }
+    } catch (err) {
+      console.error("Sync failed for event:", event.local_id, err);
+      break;
+    }
+  }
+
+  // ── Notify PHM after successful sync ──────────────────────────
+  if (syncedCount > 0) {
+    try {
+      await fetch("/api/notifications/sync-confirm/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ record_count: syncedCount }),
+      });
+    } catch (e) {
+      console.warn("Sync confirm notification failed:", e);
+    }
+  }
+
+  return { synced: syncedCount };
+}

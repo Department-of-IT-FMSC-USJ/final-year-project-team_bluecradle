@@ -35,7 +35,7 @@
 <span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
 <span class="font-medium">Growth Monitoring</span>
 </a>
-<a data-nav="vaccinations" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="#">
+<a data-nav="vaccinations" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="{% url 'clinic:infant_search' %}?filter=defaulters">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="vaccines">vaccines</span>
 <span class="font-medium">Vaccinations</span>
@@ -48,7 +48,7 @@
 <span class="material-symbols-outlined" data-icon="event_note">event_note</span>
 <span class="font-medium">Clinic Sessions</span>
 </a>
-<a data-nav="alerts" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="#">
+<a data-nav="alerts" class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between" href="{% url 'clinic:alerts' %}">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 <span class="font-medium">Alerts</span>
@@ -108,6 +108,11 @@
 <main class="ml-72 flex-1 flex flex-col">
 {% block body_content %}
 {% endblock %}
+
+
+<script>
+    window.VAPID_PUBLIC_KEY = "{{ vapid_public_key }}";
+</script>
 
 <script type="module" src="{% static 'js/app.js' %}"></script>
 

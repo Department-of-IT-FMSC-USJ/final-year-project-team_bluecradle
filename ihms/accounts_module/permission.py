@@ -20,7 +20,7 @@ class IsParent(BasePermission):
     def has_permission(self, request, view) -> bool:
         return bool(
             request.user.is_authenticated and
-            hasattr(request.user, 'guardian_profile') and
+            hasattr(request.user, 'parent_profile') and
             request.session.get('active_role') == UserRole.PARENT
         )
 

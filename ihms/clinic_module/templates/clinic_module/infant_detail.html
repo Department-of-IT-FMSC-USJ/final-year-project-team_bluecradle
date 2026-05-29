@@ -407,6 +407,11 @@ function switchTab(tab) {
     document.getElementById('tab-' + tab).classList.add('bg-white', 'text-primary', 'font-bold', 'shadow-sm');
     document.getElementById('tab-' + tab).classList.remove('text-on-surface-variant', 'font-medium');
 }
+
+// Auto-switch to correct tab on page load
+document.addEventListener('DOMContentLoaded', function() {
+    switchTab('{{ active_tab }}');
+});
 </script>
 
 <script>

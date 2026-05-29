@@ -7,3 +7,6 @@ celery
 redis
 numpy 
 tensorflow
+pywebpush
+python-decouple
+reportlab
