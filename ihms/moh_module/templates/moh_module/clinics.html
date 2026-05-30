@@ -1,0 +1,182 @@
+{% extends 'moh_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'moh:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Clinic Sessions</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Clinic Sessions</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{{ division }} · All PHM clinic activity</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm">
+            <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Sessions</p>
+            <h3 class="text-3xl font-extrabold text-primary font-headline">{{ total_sessions }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">All time</p>
+        </div>
+        <div class="bg-secondary-container/20 p-5 rounded-2xl border border-secondary-container/30 shadow-sm">
+            <p class="text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">Completed</p>
+            <h3 class="text-3xl font-extrabold text-secondary font-headline">{{ completed_sessions }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Successfully held</p>
+        </div>
+        <div class="bg-primary-fixed/30 p-5 rounded-2xl border border-primary-fixed/50 shadow-sm">
+            <p class="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">This Month</p>
+            <h3 class="text-3xl font-extrabold text-primary font-headline">{{ sessions_this_month }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Sessions held</p>
+        </div>
+        <div class="bg-tertiary-fixed-dim/10 p-5 rounded-2xl border border-tertiary-fixed-dim/30 shadow-sm">
+            <p class="text-[11px] font-bold text-on-tertiary-fixed-variant uppercase tracking-widest mb-1">Upcoming</p>
+            <h3 class="text-3xl font-extrabold text-on-tertiary-fixed-variant font-headline">{{ upcoming_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Scheduled sessions</p>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Left: Upcoming + Past -->
+        <div class="col-span-12 xl:col-span-8 space-y-8">
+
+            <!-- Upcoming Sessions -->
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10 flex items-center justify-between">
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Upcoming Sessions</h3>
+                    <span class="px-3 py-1 bg-secondary-container/30 text-secondary text-[10px] font-bold rounded-full uppercase">
+                        {{ upcoming_count }} scheduled
+                    </span>
+                </div>
+                <div class="divide-y divide-outline-variant/10">
+                    {% for session in upcoming_sessions %}
+                    <div class="px-8 py-6 flex items-center gap-6 hover:bg-surface transition-colors">
+                        <div class="w-16 h-16 bg-primary rounded-2xl flex flex-col items-center justify-center shrink-0 text-white">
+                            <p class="text-xl font-extrabold font-headline leading-none">{{ session.session_date|date:"d" }}</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">{{ session.session_date|date:"M" }}</p>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-on-surface">{{ session.get_session_type_display }}</p>
+                            <p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">person</span>
+                                {{ session.phm.full_name }}
+                            </p>
+                            <p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">location_on</span>
+                                {{ session.location }}
+                            </p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold uppercase shrink-0">
+                            {{ session.status }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="px-8 py-12 text-center">
+                        <span class="material-symbols-outlined text-4xl text-outline-variant block mb-3">event_busy</span>
+                        <p class="text-sm text-on-surface-variant">No upcoming sessions scheduled.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Past Sessions -->
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10">
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Past Sessions</h3>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHM</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Type</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Location</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for session in past_sessions %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5 font-medium text-sm">{{ session.session_date|date:"d M Y" }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ session.phm.full_name }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ session.get_session_type_display }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ session.location }}</td>
+                            <td class="px-8 py-5">
+                                {% if session.status == 'COMPLETED' %}
+                                <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold uppercase">Completed</span>
+                                {% else %}
+                                <span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase">{{ session.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No past sessions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- Right: Session Stats by PHM -->
+        <div class="col-span-12 xl:col-span-4 space-y-6">
+
+            <div class="bg-[#1A3A5C] rounded-3xl p-6 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-5">
+                        <span class="material-symbols-outlined text-secondary-container">event_note</span>
+                        <h4 class="text-sm font-bold uppercase tracking-widest text-on-primary-container">Next Sessions</h4>
+                    </div>
+                    <div class="space-y-4">
+                        {% for session in upcoming_sessions|slice:":5" %}
+                        <div class="flex items-center gap-4 border-b border-white/10 pb-4 last:border-0 last:pb-0">
+                            <div class="w-12 h-12 bg-white/10 rounded-xl flex flex-col items-center justify-center shrink-0">
+                                <p class="text-sm font-extrabold leading-none">{{ session.session_date|date:"d" }}</p>
+                                <p class="text-[9px] uppercase tracking-widest">{{ session.session_date|date:"M" }}</p>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold truncate">{{ session.phm.full_name }}</p>
+                                <p class="text-[10px] text-primary-fixed-dim truncate">{{ session.location }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-primary-fixed-dim">No upcoming sessions.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            </div>
+
+            <!-- Summary -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Summary</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-on-surface-variant">Total Sessions</span>
+                        <span class="text-xl font-extrabold text-primary font-headline">{{ total_sessions }}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                        <span class="text-sm text-on-surface-variant">Completed</span>
+                        <span class="text-xl font-extrabold text-secondary font-headline">{{ completed_sessions }}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                        <span class="text-sm text-on-surface-variant">This Month</span>
+                        <span class="text-xl font-extrabold text-primary font-headline">{{ sessions_this_month }}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                        <span class="text-sm text-on-surface-variant">Upcoming</span>
+                        <span class="text-xl font-extrabold text-on-tertiary-fixed-variant font-headline">{{ upcoming_count }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

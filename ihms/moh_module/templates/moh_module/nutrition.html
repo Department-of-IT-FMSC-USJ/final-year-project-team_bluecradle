@@ -1,0 +1,156 @@
+{% extends 'moh_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'moh:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Nutritional Status</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Nutritional Status</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{{ division }} · Latest ML risk assessments</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-error-container/20 p-5 rounded-2xl border border-error/20 shadow-sm">
+            <p class="text-[11px] font-bold text-error uppercase tracking-widest mb-1">SAM</p>
+            <h3 class="text-3xl font-extrabold text-error font-headline">{{ sam_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Severe Acute Malnutrition</p>
+        </div>
+        <div class="bg-tertiary-fixed-dim/10 p-5 rounded-2xl border border-tertiary-fixed-dim/30 shadow-sm">
+            <p class="text-[11px] font-bold text-on-tertiary-fixed-variant uppercase tracking-widest mb-1">MAM</p>
+            <h3 class="text-3xl font-extrabold text-on-tertiary-fixed-variant font-headline">{{ mam_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Moderate Acute Malnutrition</p>
+        </div>
+        <div class="bg-secondary-container/20 p-5 rounded-2xl border border-secondary-container/30 shadow-sm">
+            <p class="text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">Normal</p>
+            <h3 class="text-3xl font-extrabold text-secondary font-headline">{{ normal_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Healthy growth</p>
+        </div>
+        <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm">
+            <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Assessed</p>
+            <h3 class="text-3xl font-extrabold text-primary font-headline">{{ assessed_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Infants with ML assessment</p>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Left: SAM + MAM Tables -->
+        <div class="col-span-12 xl:col-span-8 space-y-8">
+
+            <!-- SAM Infants -->
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10 flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-error"></div>
+                    <h3 class="font-headline text-lg font-extrabold text-primary">SAM Risk Infants</h3>
+                    <span class="ml-auto px-3 py-1 bg-error-container/30 text-error text-[10px] font-bold rounded-full uppercase">{{ sam_count }} infants</span>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Infant</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHN</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Confidence</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Assessed</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHM</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for assessment in sam_infants %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5 font-bold text-sm text-on-surface">{{ assessment.infant.full_name }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ assessment.infant.phn }}</td>
+                            <td class="px-8 py-5">
+                                <span class="px-3 py-1 rounded-full bg-error-container/30 text-error text-[10px] font-bold">
+                                    {{ assessment.confidence_score|floatformat:2 }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ assessment.assessed_at|date:"d M Y" }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ assessment.infant.registered_phm.full_name }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No SAM risk infants.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MAM Infants -->
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10 flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></div>
+                    <h3 class="font-headline text-lg font-extrabold text-primary">MAM Risk Infants</h3>
+                    <span class="ml-auto px-3 py-1 bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold rounded-full uppercase">{{ mam_count }} infants</span>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Infant</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHN</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Confidence</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Assessed</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHM</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for assessment in mam_infants %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5 font-bold text-sm text-on-surface">{{ assessment.infant.full_name }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ assessment.infant.phn }}</td>
+                            <td class="px-8 py-5">
+                                <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold">
+                                    {{ assessment.confidence_score|floatformat:2 }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ assessment.assessed_at|date:"d M Y" }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ assessment.infant.registered_phm.full_name }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No MAM risk infants.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- Right: Oedema Cases -->
+        <div class="col-span-12 xl:col-span-4 space-y-6">
+
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-primary uppercase tracking-widest mb-4">
+                    Bilateral Pitting Oedema
+                </h3>
+                {% if oedema_cases %}
+                <div class="space-y-4">
+                    {% for record in oedema_cases %}
+                    <div class="p-4 bg-error-container/10 rounded-2xl border border-error/10">
+                        <p class="font-bold text-sm text-on-surface">{{ record.infant.full_name }}</p>
+                        <p class="text-[10px] text-on-surface-variant mt-1">PHN: {{ record.infant.phn }}</p>
+                        <p class="text-[10px] text-on-surface-variant">Recorded: {{ record.visit_date|date:"d M Y" }}</p>
+                        <p class="text-[10px] text-on-surface-variant">PHM: {{ record.infant.registered_phm.full_name }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <span class="material-symbols-outlined text-4xl text-outline-variant block mb-3">check_circle</span>
+                    <p class="text-sm text-on-surface-variant">No oedema cases recorded.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

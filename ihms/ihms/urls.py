@@ -33,6 +33,10 @@ urlpatterns = [
     path('api/notifications/', include('notifications_module.urls', namespace='notifications')),
 
     path('api/chatbot/', include('chatbot_module.urls', namespace='chatbot')),
+
+    path('parent/', include('parent_module.urls', namespace='parent')),
+
+    path('moh/', include('moh_module.urls', namespace='moh'))
 ]
 
 # Fallback pages

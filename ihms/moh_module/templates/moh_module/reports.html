@@ -1,0 +1,155 @@
+{% extends 'moh_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'moh:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Reports</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Reports</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{{ division }} · Downloadable PDF reports</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Report 1: Division Summary -->
+        <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-white">summarize</span>
+                </div>
+                <div>
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Division Summary</h3>
+                    <p class="text-sm text-on-surface-variant mt-1">Complete snapshot of the division — infant population, nutritional status, vaccination coverage and clinic sessions.</p>
+                </div>
+            </div>
+            <div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Infant Population</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">SAM/MAM/Normal</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Vaccination</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Sessions</span>
+                </div>
+                <a href="{% url 'moh:download_summary' %}">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all shrink-0 ml-4">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Download
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Report 2: Nutritional Status -->
+        <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-12 h-12 bg-error-container rounded-2xl flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-error">monitor_weight</span>
+                </div>
+                <div>
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Nutritional Status</h3>
+                    <p class="text-sm text-on-surface-variant mt-1">Full list of SAM and MAM risk infants with confidence scores, assessment dates, and assigned PHM details.</p>
+                </div>
+            </div>
+            <div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-error-container/30 text-error text-[10px] font-bold rounded-full">SAM Infants</span>
+                    <span class="px-2 py-1 bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant text-[10px] font-bold rounded-full">MAM Infants</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Oedema Cases</span>
+                </div>
+                <a href="{% url 'moh:download_nutrition' %}">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all shrink-0 ml-4">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Download
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Report 3: Vaccination Coverage -->
+        <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-12 h-12 bg-secondary-container/30 rounded-2xl flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-secondary">vaccines</span>
+                </div>
+                <div>
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Vaccination Coverage</h3>
+                    <p class="text-sm text-on-surface-variant mt-1">Per-vaccine breakdown across the division with coverage rates, plus a full list of defaulted vaccinations.</p>
+                </div>
+            </div>
+            <div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-secondary-container/30 text-secondary text-[10px] font-bold rounded-full">Per Vaccine</span>
+                    <span class="px-2 py-1 bg-error-container/30 text-error text-[10px] font-bold rounded-full">Defaulters</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Coverage Rate</span>
+                </div>
+                <a href="{% url 'moh:download_vaccination' %}">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all shrink-0 ml-4">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Download
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Report 4: PHM Activity -->
+        <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-12 h-12 bg-primary-fixed/30 rounded-2xl flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-primary">groups</span>
+                </div>
+                <div>
+                    <h3 class="font-headline text-lg font-extrabold text-primary">PHM Activity</h3>
+                    <p class="text-sm text-on-surface-variant mt-1">Each PHM's infant registrations, clinic sessions, and growth records. Filter by month for performance review.</p>
+                </div>
+            </div>
+
+            <!-- Month Filter -->
+            <div class="flex gap-3 mb-4">
+                <select id="phm-month" class="flex-1 bg-surface-container-low border border-outline-variant/20 rounded-xl px-3 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20">
+                    <option value="">All Time</option>
+                    {% for num, name in months %}
+                    <option value="{{ num }}" {% if num == today.month %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <select id="phm-year" class="w-28 bg-surface-container-low border border-outline-variant/20 rounded-xl px-3 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20">
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Infant Count</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Sessions</span>
+                    <span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded-full">Growth Records</span>
+                </div>
+                <button onclick="downloadPHMReport()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all shrink-0 ml-4">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                    Download
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function downloadPHMReport() {
+    const month = document.getElementById('phm-month').value;
+    const year  = document.getElementById('phm-year').value;
+    let url = "{% url 'moh:download_phm_activity' %}";
+    if (month && year) {
+        url += `?month=${month}&year=${year}`;
+    }
+    window.location.href = url;
+}
+</script>
+
+{% endblock %}  

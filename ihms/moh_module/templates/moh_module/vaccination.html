@@ -1,0 +1,185 @@
+{% extends 'moh_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'moh:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Vaccination Coverage</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Vaccination Coverage</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{{ division }} · National Immunization Schedule</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-secondary-container/20 p-5 rounded-2xl border border-secondary-container/30 shadow-sm">
+            <p class="text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">Administered</p>
+            <h3 class="text-3xl font-extrabold text-secondary font-headline">{{ vac_administered }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">of {{ vac_total }} total</p>
+        </div>
+        <div class="bg-error-container/20 p-5 rounded-2xl border border-error/20 shadow-sm">
+            <p class="text-[11px] font-bold text-error uppercase tracking-widest mb-1">Defaulted</p>
+            <h3 class="text-3xl font-extrabold text-error font-headline">{{ vac_defaulted }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Overdue vaccines</p>
+        </div>
+        <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm">
+            <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Pending</p>
+            <h3 class="text-3xl font-extrabold text-primary font-headline">{{ vac_pending }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Upcoming vaccines</p>
+        </div>
+        <div class="bg-primary-fixed/30 p-5 rounded-2xl border border-primary-fixed/50 shadow-sm">
+            <p class="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">Coverage Rate</p>
+            <h3 class="text-3xl font-extrabold text-primary font-headline">{{ coverage_rate }}%</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Division average</p>
+        </div>
+    </section>
+
+    <!-- Coverage Progress Bar -->
+    <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 mb-8">
+        <div class="flex justify-between text-sm font-bold text-on-surface-variant mb-3">
+            <span>Overall Coverage Progress</span>
+            <span>{{ vac_administered }} / {{ vac_total }}</span>
+        </div>
+        <div class="w-full bg-surface-container-high rounded-full h-4 mb-2">
+            <div class="bg-secondary h-4 rounded-full transition-all"
+                 style="width: {{ coverage_rate }}%"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-on-surface-variant">
+            <span>0%</span>
+            <span class="font-bold text-secondary">{{ coverage_rate }}% coverage</span>
+            <span>100%</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Left: Per Vaccine Breakdown -->
+        <div class="col-span-12 xl:col-span-8 space-y-8">
+
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10">
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Per Vaccine Breakdown</h3>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Vaccine</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Total</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Administered</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Defaulted</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Pending</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Coverage</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for vac in vaccine_breakdown %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5 font-bold text-sm text-on-surface">{{ vac.vaccine_name }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ vac.total }}</td>
+                            <td class="px-8 py-5">
+                                <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold">
+                                    {{ vac.administered }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-5">
+                                {% if vac.defaulted > 0 %}
+                                <span class="px-3 py-1 rounded-full bg-error-container/30 text-error text-[10px] font-bold">
+                                    {{ vac.defaulted }}
+                                </span>
+                                {% else %}
+                                <span class="text-sm text-on-surface-variant">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ vac.pending }}</td>
+                            <td class="px-8 py-5">
+                                {% if vac.total > 0 %}
+                                {% widthratio vac.administered vac.total 100 as rate %}
+                                <div class="flex items-center gap-2">
+                                    <div class="w-16 bg-surface-container-high rounded-full h-1.5">
+                                        <div class="bg-secondary h-1.5 rounded-full" style="width: {{ rate }}%"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-on-surface-variant">{{ rate }}%</span>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-8 py-8 text-center text-sm text-on-surface-variant">No vaccination data found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Defaulted Vaccinations -->
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10 flex items-center gap-3">
+                    <h3 class="font-headline text-lg font-extrabold text-primary">Defaulted Vaccinations</h3>
+                    <span class="ml-auto px-3 py-1 bg-error-container/30 text-error text-[10px] font-bold rounded-full uppercase">{{ vac_defaulted }} overdue</span>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Infant</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Vaccine</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Due Date</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHM</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for vac in defaulted_vaccinations %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5">
+                                <p class="font-bold text-sm text-on-surface">{{ vac.infant.full_name }}</p>
+                                <p class="text-[10px] text-on-surface-variant">{{ vac.infant.phn }}</p>
+                            </td>
+                            <td class="px-8 py-5 text-sm font-medium text-on-surface">{{ vac.vaccine_name }}</td>
+                            <td class="px-8 py-5 text-sm text-error font-bold">{{ vac.due_date|date:"d M Y" }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ vac.infant.registered_phm.full_name }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-8 py-8 text-center text-sm text-on-surface-variant">No defaulted vaccinations.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- Right: Summary Breakdown -->
+        <div class="col-span-12 xl:col-span-4 space-y-6">
+
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Status Breakdown</h3>
+                <div class="space-y-3">
+                    <div class="p-4 rounded-xl bg-secondary-container/20 border-l-4 border-secondary">
+                        <p class="text-xs text-secondary font-bold mb-1">ADMINISTERED</p>
+                        <p class="text-3xl font-bold font-headline text-secondary">{{ vac_administered }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-surface-container border-l-4 border-outline-variant">
+                        <p class="text-xs text-on-surface-variant font-bold mb-1">PENDING</p>
+                        <p class="text-3xl font-bold font-headline text-on-surface-variant">{{ vac_pending }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-error-container/20 border-l-4 border-error">
+                        <p class="text-xs text-error font-bold mb-1">DEFAULTED</p>
+                        <p class="text-3xl font-bold font-headline text-error">{{ vac_defaulted }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-tertiary-fixed-dim/10 border-l-4 border-tertiary-fixed-dim">
+                        <p class="text-xs text-on-tertiary-fixed-variant font-bold mb-1">CONTRAINDICATED</p>
+                        <p class="text-3xl font-bold font-headline text-on-tertiary-fixed-variant">{{ vac_contraindicated }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

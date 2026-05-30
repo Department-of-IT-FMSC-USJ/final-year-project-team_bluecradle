@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'audit_module',
     'notifications_module',
     'chatbot_module',
+    'parent_module',
+    'moh_module'
 ]
 
 MIDDLEWARE = [
@@ -96,7 +98,6 @@ DATABASES = {
         'PORT': config('DB_PORT', default='5432'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

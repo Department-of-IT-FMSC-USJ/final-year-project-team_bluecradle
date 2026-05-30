@@ -1,0 +1,115 @@
+{% extends 'core_module/base.html' %}
+{% load static %}
+
+{% block head_and_body %}
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+
+<!-- Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-72 flex flex-col py-6 bg-slate-50 border-r border-slate-200/20 z-50">
+    <div class="px-6 mb-8">
+        <h1 class="text-2xl font-bold text-[#002444]">BlueCradle</h1>
+        <p class="text-xs font-medium text-slate-500 tracking-wider">MOH Officer Portal</p>
+    </div>
+
+    <nav class="flex-1 space-y-1 overflow-y-auto no-scrollbar">
+        <a data-nav="dashboard"
+           class="flex items-center gap-3 text-slate-600 rounded-xl px-4 py-3 mx-2 transition-colors hover:bg-slate-200"
+           href="{% url 'moh:dashboard' %}">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-medium">Dashboard</span>
+        </a>
+
+        <a data-nav="nutrition"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'moh:nutrition' %}">
+            <span class="material-symbols-outlined">monitor_weight</span>
+            <span class="font-medium">Nutritional Status</span>
+        </a>
+
+        <a data-nav="vaccination"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'moh:vaccination' %}">
+            <span class="material-symbols-outlined">vaccines</span>
+            <span class="font-medium">Vaccination Coverage</span>
+        </a>
+
+        <a data-nav="phm_activity"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'moh:phm_activity' %}">
+            <span class="material-symbols-outlined">groups</span>
+            <span class="font-medium">PHM Activity</span>
+        </a>
+
+        <a data-nav="clinics"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'moh:clinics' %}">
+            <span class="material-symbols-outlined">event_note</span>
+            <span class="font-medium">Clinic Sessions</span>
+        </a>
+        <a data-nav="reports"
+        class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+        href="{% url 'moh:reports' %}">
+            <span class="material-symbols-outlined">summarize</span>
+            <span class="font-medium">Reports</span>
+        </a>
+    </nav>
+
+    <!-- User Profile Card -->
+    <div class="mt-auto px-4">
+        <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {{ request.user.moh_profile.full_name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-on-surface">{{ request.user.moh_profile.full_name|upper }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ request.user.moh_profile.moh_division }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 mt-2">
+            <a href="{% url 'user:user_logout' %}"
+               class="flex items-center gap-3 text-error px-4 py-3 mx-0 hover:bg-error-container/20 transition-colors rounded-xl w-full">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="font-medium text-sm">Logout</span>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<!-- Main Content Area -->
+<main class="ml-72 flex-1 flex flex-col">
+    {% block body_content %}
+    {% endblock %}
+</main>
+
+<!-- Active nav highlight -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const activeNav = "{{ active_nav }}";
+    document.querySelectorAll('nav a[data-nav]').forEach(link => {
+        link.style.backgroundColor = '';
+        link.style.color = '';
+        link.classList.remove('text-white');
+        link.classList.add('text-slate-600');
+        if (link.getAttribute('data-nav') === activeNav) {
+            link.style.backgroundColor = '#1A3A5C';
+            link.style.color = 'white';
+            link.classList.remove('text-slate-600');
+            link.classList.add('text-white');
+        }
+    });
+});
+</script>
+
+</body>
+{% endblock %}

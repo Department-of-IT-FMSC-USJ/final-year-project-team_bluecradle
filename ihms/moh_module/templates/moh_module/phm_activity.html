@@ -1,0 +1,132 @@
+{% extends 'moh_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'moh:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">PHM Activity</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">PHM Activity</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{{ division }} · {{ phms|length }} PHM{{ phms|length|pluralize }} registered</p>
+    </div>
+
+    <!-- PHM Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        {% for phm in phms %}
+        <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 hover:shadow-md transition-shadow">
+
+            <!-- PHM Header -->
+            <div class="flex items-center gap-4 mb-5">
+                <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white font-extrabold text-xl shrink-0">
+                    {{ phm.full_name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-on-surface">{{ phm.full_name }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ phm.registration_number }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ phm.operational_area }}</p>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="text-center p-3 bg-surface-container-low rounded-xl">
+                    <p class="text-2xl font-extrabold text-primary font-headline">{{ phm.infant_count }}</p>
+                    <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Infants</p>
+                </div>
+                <div class="text-center p-3 bg-surface-container-low rounded-xl">
+                    <p class="text-2xl font-extrabold text-secondary font-headline">{{ phm.session_count }}</p>
+                    <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Sessions</p>
+                </div>
+                <div class="text-center p-3 bg-surface-container-low rounded-xl">
+                    <p class="text-2xl font-extrabold text-primary font-headline">{{ phm.growth_record_count }}</p>
+                    <p class="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Records</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+                <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                    <span class="material-symbols-outlined text-sm">event</span>
+                    {% if phm.last_session_date %}
+                    Last session: {{ phm.last_session_date|date:"d M Y" }}
+                    {% else %}
+                    No sessions yet
+                    {% endif %}
+                </div>
+                {% if phm.is_verified %}
+                <span class="px-2 py-1 bg-secondary-container/30 text-secondary text-[9px] font-bold rounded-full uppercase">Verified</span>
+                {% else %}
+                <span class="px-2 py-1 bg-error-container/30 text-error text-[9px] font-bold rounded-full uppercase">Unverified</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 bg-surface-container-lowest rounded-3xl p-12 border border-outline-variant/10 text-center">
+            <span class="material-symbols-outlined text-5xl text-outline-variant block mb-3">groups</span>
+            <p class="text-sm text-on-surface-variant">No PHMs registered in this division.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+        <div class="px-8 py-6 border-b border-outline-variant/10">
+            <h3 class="font-headline text-lg font-extrabold text-primary">Detailed Activity Table</h3>
+        </div>
+        <table class="w-full text-left">
+            <thead class="bg-surface-container-low">
+                <tr>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHM</th>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Reg. No</th>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Infants</th>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Sessions</th>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Growth Records</th>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Last Session</th>
+                    <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10">
+                {% for phm in phms %}
+                <tr class="hover:bg-surface transition-colors">
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
+                                {{ phm.full_name|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-on-surface">{{ phm.full_name }}</p>
+                                <p class="text-[10px] text-on-surface-variant">{{ phm.operational_area }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-8 py-5 text-sm text-on-surface-variant">{{ phm.registration_number }}</td>
+                    <td class="px-8 py-5 text-xl font-extrabold text-primary font-headline">{{ phm.infant_count }}</td>
+                    <td class="px-8 py-5 text-xl font-extrabold text-secondary font-headline">{{ phm.session_count }}</td>
+                    <td class="px-8 py-5 text-xl font-extrabold text-primary font-headline">{{ phm.growth_record_count }}</td>
+                    <td class="px-8 py-5 text-sm text-on-surface-variant">
+                        {{ phm.last_session_date|date:"d M Y"|default:"—" }}
+                    </td>
+                    <td class="px-8 py-5">
+                        {% if phm.is_verified %}
+                        <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold uppercase">Verified</span>
+                        {% else %}
+                        <span class="px-3 py-1 rounded-full bg-error-container/30 text-error text-[10px] font-bold uppercase">Unverified</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-8 py-8 text-center text-sm text-on-surface-variant">No PHMs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
