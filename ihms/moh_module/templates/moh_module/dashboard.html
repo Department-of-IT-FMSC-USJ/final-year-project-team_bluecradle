@@ -1,0 +1,189 @@
+{% extends 'moh_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <span class="text-primary font-semibold">Dashboard</span>
+        </nav>
+        <div class="flex justify-between items-end">
+            <div>
+                <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Dashboard</h1>
+                <p class="text-xs text-on-surface-variant font-medium mt-1">{% now "l, d F Y" %} · {{ division }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards Grid -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+
+        <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm">
+            <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Infants</p>
+            <div class="flex items-baseline gap-2">
+                <h3 class="text-3xl font-extrabold text-primary font-headline">{{ total_infants }}</h3>
+                <span class="text-[10px] font-bold text-secondary">+{{ new_this_month }} this month</span>
+            </div>
+            <div class="flex gap-3 mt-2">
+                <span class="text-[10px] text-on-surface-variant">♂ {{ male_count }} Male</span>
+                <span class="text-[10px] text-on-surface-variant">♀ {{ female_count }} Female</span>
+            </div>
+        </div>
+
+        <div class="bg-error-container/20 p-5 rounded-2xl border border-error/20 shadow-sm">
+            <p class="text-[11px] font-bold text-error uppercase tracking-widest mb-1">SAM Risk</p>
+            <h3 class="text-3xl font-extrabold text-error font-headline">{{ sam_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Immediate attention</p>
+        </div>
+
+        <div class="bg-tertiary-fixed-dim/10 p-5 rounded-2xl border border-tertiary-fixed-dim/30 shadow-sm">
+            <p class="text-[11px] font-bold text-on-tertiary-fixed-variant uppercase tracking-widest mb-1">MAM Risk</p>
+            <h3 class="text-3xl font-extrabold text-on-tertiary-fixed-variant font-headline">{{ mam_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Monitor closely</p>
+        </div>
+
+        <div class="bg-secondary-container/20 p-5 rounded-2xl border border-secondary-container/30 shadow-sm">
+            <p class="text-[11px] font-bold text-secondary uppercase tracking-widest mb-1">Normal</p>
+            <h3 class="text-3xl font-extrabold text-secondary font-headline">{{ normal_count }}</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">of {{ assessed_count }} assessed</p>
+        </div>
+
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Left: Vaccination + Growth -->
+        <div class="col-span-12 xl:col-span-8 space-y-8">
+
+            <!-- Vaccination Coverage -->
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-lg font-extrabold text-primary mb-6">Vaccination Coverage</h3>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="text-center p-4 bg-secondary-container/20 rounded-2xl border border-secondary-container/30">
+                        <p class="text-3xl font-extrabold text-secondary font-headline">{{ vac_administered }}</p>
+                        <p class="text-[10px] font-bold text-secondary uppercase tracking-widest mt-1">Administered</p>
+                    </div>
+                    <div class="text-center p-4 bg-error-container/20 rounded-2xl border border-error/20">
+                        <p class="text-3xl font-extrabold text-error font-headline">{{ vac_defaulted }}</p>
+                        <p class="text-[10px] font-bold text-error uppercase tracking-widest mt-1">Defaulted</p>
+                    </div>
+                    <div class="text-center p-4 bg-primary-fixed/30 rounded-2xl border border-primary-fixed/50">
+                        <p class="text-3xl font-extrabold text-primary font-headline">{{ coverage_rate }}%</p>
+                        <p class="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Coverage Rate</p>
+                    </div>
+                </div>
+                <!-- Coverage Bar -->
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-on-surface-variant uppercase mb-2">
+                        <span>Coverage Progress</span>
+                        <span>{{ vac_administered }} / {{ vac_total }}</span>
+                    </div>
+                    <div class="w-full bg-surface-container-high rounded-full h-3">
+                        <div class="bg-secondary h-3 rounded-full transition-all"
+                             style="width: {{ coverage_rate }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHM Activity Table -->
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+                    <h3 class="font-headline text-lg font-extrabold text-primary">PHM Activity</h3>
+                    <a href="{% url 'moh:phm_activity' %}" class="text-xs font-bold text-secondary hover:underline">View All</a>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">PHM</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Infants</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Sessions</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Area</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for phm in phms %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
+                                        {{ phm.full_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-on-surface">{{ phm.full_name }}</p>
+                                        <p class="text-[10px] text-on-surface-variant">{{ phm.registration_number }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5 text-xl font-extrabold text-primary font-headline">{{ phm.infant_count }}</td>
+                            <td class="px-8 py-5 text-xl font-extrabold text-secondary font-headline">{{ phm.session_count }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ phm.operational_area }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-8 py-8 text-center text-sm text-on-surface-variant">No PHMs found in this division.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- Right: Clinic Sessions + Growth Stats -->
+        <div class="col-span-12 xl:col-span-4 space-y-6">
+
+            <!-- Growth Stats -->
+            <div class="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-primary uppercase tracking-widest mb-4">Growth Monitoring</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-on-surface-variant">Total Records</span>
+                        <span class="text-xl font-extrabold text-primary font-headline">{{ total_growth_records }}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                        <span class="text-sm text-on-surface-variant">Sessions This Month</span>
+                        <span class="text-xl font-extrabold text-secondary font-headline">{{ sessions_this_month }}</span>
+                    </div>
+                    {% if oedema_count > 0 %}
+                    <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                        <span class="text-sm text-error">Bilateral Oedema</span>
+                        <span class="text-xl font-extrabold text-error font-headline">{{ oedema_count }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upcoming Clinic Sessions -->
+            <div class="bg-[#1A3A5C] rounded-3xl p-6 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-5">
+                        <span class="material-symbols-outlined text-secondary-container">event</span>
+                        <h4 class="text-sm font-bold uppercase tracking-widest text-on-primary-container">Upcoming Sessions</h4>
+                    </div>
+                    <div class="space-y-4">
+                        {% for session in upcoming_sessions %}
+                        <div class="flex items-center gap-4 border-b border-white/10 pb-4 last:border-0 last:pb-0">
+                            <div class="w-12 h-12 bg-white/10 rounded-xl flex flex-col items-center justify-center shrink-0">
+                                <p class="text-sm font-extrabold leading-none">{{ session.session_date|date:"d" }}</p>
+                                <p class="text-[9px] uppercase tracking-widest">{{ session.session_date|date:"M" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold">{{ session.phm.full_name }}</p>
+                                <p class="text-[10px] text-primary-fixed-dim">{{ session.location }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-primary-fixed-dim">No upcoming sessions.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
