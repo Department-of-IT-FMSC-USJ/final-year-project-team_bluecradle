@@ -15,13 +15,11 @@
 <form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
 {% csrf_token %}
 <!-- System messages — only for role_redirect errors -->
-{% if messages %}
-    {% for message in messages %}
-        <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">error</span>
-            {{ message }}
-        </div>
-    {% endfor %}
+{% if error %}
+    <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">error</span>
+        {{ error }}
+    </div>
 {% endif %}
 <!-- Section 1: Personal Information -->
 <section>

@@ -8,20 +8,18 @@
           <span class="material-symbols-outlined text-primary text-3xl">child_care</span>
           <h1 class="text-2xl font-headline font-extrabold text-primary">BlueCradle</h1>
         </div>
-        <h2 class="text-3xl font-headline font-bold text-on-background">Parent Registration</h2>
+        <h2 class="text-3xl font-headline font-bold text-on-background">Parent Onboarding</h2>
         <p class="text-on-surface-variant mt-2">Create your account to access your child's health records.</p>
       </header>
 
       <form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
         {% csrf_token %}
 
-        {% if messages %}
-          {% for message in messages %}
-            <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
+        {% if error %}
+          <div class="mb-6 p-4 rounded-xl bg-error-container/30 border border-error/20 text-error text-sm font-medium flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">error</span>
-              {{ message }}
-            </div>
-          {% endfor %}
+              {{ error }}
+          </div>
         {% endif %}
 
         <!-- Section 1: Personal Information -->
