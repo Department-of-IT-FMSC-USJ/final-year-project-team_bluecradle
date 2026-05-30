@@ -173,6 +173,8 @@ class ImmunizationEventSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class FHBAtomicEventSerializer(serializers.ModelSerializer):
+    infant = serializers.CharField()  # Accept PHN string
+    session = serializers.IntegerField()  # Accept session ID
 
     class Meta:
         model = FHBAtomicEvent
@@ -198,6 +200,22 @@ class FHBAtomicEventSerializer(serializers.ModelSerializer):
             'synced_at',
             'created_at',
         ]
+
+    def create(self, validated_data):
+        from infants_module.models import Infant
+        from clinic_module.models import ClinicSession
+
+        infant_phn = validated_data.pop('infant')
+        session_id = validated_data.pop('session')
+
+        infant = Infant.objects.get(phn=infant_phn)
+        session = ClinicSession.objects.get(id=session_id)
+
+        return FHBAtomicEvent.objects.create(
+            infant=infant,
+            session=session,
+            **validated_data
+        )
 
 from .models import ScheduledVaccination
 

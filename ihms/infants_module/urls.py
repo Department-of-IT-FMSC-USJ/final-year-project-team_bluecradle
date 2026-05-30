@@ -8,6 +8,6 @@ urlpatterns = [
     path('', views.infant_home, name='infant-home'),
 
     # API endpoints for infant management
-    path('', views.InfantListCreateView.as_view(), name='infant-list-create'),
+    path('list/', views.InfantListCreateView.as_view(), name='infant-list-create'),
     path('<str:phn>/', views.InfantDetailView.as_view(), name='infant-detail'),
 ]

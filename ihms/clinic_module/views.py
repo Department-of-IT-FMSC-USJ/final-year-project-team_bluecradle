@@ -21,6 +21,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
 from clinic_module.models import ScheduledVaccination
+from django.urls import reverse
 
 @login_required
 def phm_dashboard(request):
@@ -315,7 +316,7 @@ def growth_record(request, phn):
         data = request.POST
         age_in_days = (date.fromisoformat(data['visit_date']) - infant.date_of_birth).days
 
-        GrowthRecord.objects.create(
+        saved_record = GrowthRecord.objects.create(
             infant=infant,
             session_id=data['session'],
             visit_date=data['visit_date'],
@@ -328,8 +329,14 @@ def growth_record(request, phn):
             haz=data.get('haz') or None,
             bilateral_pitting_oedema='bilateral_pitting_oedema' in data,
         )
-        messages.success(request, "Growth record saved successfully.")
-        return redirect('clinic:infant_detail', phn=phn)
+
+        from ml_module.tasks import run_ml_risk_assessment
+        run_ml_risk_assessment.delay(
+            infant_phn=phn,
+            growth_record_id=saved_record.id
+        )
+
+        return redirect(f"{reverse('clinic:infant_detail', args=[phn])}?success=growth_saved")
 
     context = {
         'title': 'BlueCradle - Add Growth Record',
@@ -805,12 +812,12 @@ class GrowthRecordListCreateView(APIView):
         if serializer.is_valid():
             saved_record = serializer.save()  
             
-            # Temporarily commented out — requires Redis
-            # from ml_module.tasks import run_ml_risk_assessment
-            # run_ml_risk_assessment.delay(
-            #     infant_phn=phn,
-            #     growth_record_id=saved_record.id
-            # )
+            # Rquires Redis
+            from ml_module.tasks import run_ml_risk_assessment
+            run_ml_risk_assessment.delay(
+                infant_phn=phn,
+                growth_record_id=saved_record.id
+            )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -868,7 +875,7 @@ class FHBAtomicEventCreateView(APIView):
                 phm=request.user.phm_profile,
                 moh_division=request.user.phm_profile.moh_division
             )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'status': 'synced'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

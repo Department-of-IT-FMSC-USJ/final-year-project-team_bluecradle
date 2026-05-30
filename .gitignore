@@ -41,3 +41,10 @@ chroma_db/
 
 # Chatbot sources
 rag_docs/
+
+# automaticly populate database
+ihms/clinic_module/management/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
