@@ -1,0 +1,243 @@
+{% extends 'parent_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'parent:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Digital CHDR</span>
+        </nav>
+        <div class="flex justify-between items-end">
+            <div>
+                <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Digital CHDR</h1>
+                <p class="text-sm text-on-surface-variant mt-1">Child Health Development Record · {{ infant.full_name }}</p>
+            </div>
+            <a href="{% url 'parent:chdr_download' %}">
+                <button class="flex items-center gap-2 px-6 py-3 rounded-xl bg-secondary text-white font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
+                    <span class="material-symbols-outlined">download</span>
+                    Download PDF
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- CHDR Preview Card -->
+    <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant/10 overflow-hidden mb-8">
+
+        <!-- CHDR Header -->
+        <div class="bg-primary p-8 text-white text-center">
+            <h2 class="font-headline text-2xl font-extrabold mb-1">BlueCradle</h2>
+            <p class="text-on-primary-container text-sm">Child Health Development Record (Digital)</p>
+            <p class="text-primary-fixed-dim text-xs mt-1">Generated on {% now "d F Y" %}</p>
+        </div>
+
+        <div class="p-8 space-y-10">
+
+            <!-- Section 1: Infant Profile -->
+            <div>
+                <h3 class="font-headline text-lg font-extrabold text-primary mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">person</span>
+                    Infant Profile
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Full Name</p>
+                        <p class="font-bold text-on-surface">{{ infant.full_name }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">PHN</p>
+                        <p class="font-bold text-on-surface">{{ infant.phn }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Date of Birth</p>
+                        <p class="font-bold text-on-surface">{{ infant.date_of_birth|date:"d M Y" }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Sex</p>
+                        <p class="font-bold text-on-surface">{{ infant.get_sex_display }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Birth Weight</p>
+                        <p class="font-bold text-on-surface">{{ infant.birth_weight_kg }} kg</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Birth Length</p>
+                        <p class="font-bold text-on-surface">{{ infant.birth_length_cm }} cm</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Birth Order</p>
+                        <p class="font-bold text-on-surface">{{ infant.birth_order }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">MOH Division</p>
+                        <p class="font-bold text-on-surface">{{ infant.moh_division }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Assigned PHM</p>
+                        <p class="font-bold text-on-surface">{{ infant.registered_phm.full_name }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-outline-variant/10"></div>
+
+            <!-- Section 2: ML Risk -->
+            <div>
+                <h3 class="font-headline text-lg font-extrabold text-primary mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">ecg_heart</span>
+                    ML Risk Stratification
+                </h3>
+                {% if latest_ml %}
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="p-4 rounded-2xl border text-center
+                        {% if latest_ml.risk_level == 'SAM' %}bg-error-container/20 border-error/20
+                        {% elif latest_ml.risk_level == 'MAM' %}bg-tertiary-fixed-dim/10 border-tertiary-fixed-dim/30
+                        {% else %}bg-secondary-container/10 border-secondary-container/30{% endif %}">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-2">Risk Level</p>
+                        <p class="text-2xl font-extrabold font-headline
+                            {% if latest_ml.risk_level == 'SAM' %}text-error
+                            {% elif latest_ml.risk_level == 'MAM' %}text-on-tertiary-fixed-variant
+                            {% else %}text-secondary{% endif %}">
+                            {{ latest_ml.risk_level }}
+                        </p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl text-center">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-2">Confidence</p>
+                        <p class="text-2xl font-extrabold font-headline text-primary">{{ latest_ml.confidence_score|floatformat:2 }}</p>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-2xl text-center">
+                        <p class="text-[10px] font-bold text-outline uppercase tracking-widest mb-2">Assessed On</p>
+                        <p class="font-bold text-on-surface">{{ latest_ml.assessed_at|date:"d M Y" }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="bg-surface-container-low rounded-2xl p-6 text-center">
+                    <p class="text-sm text-on-surface-variant">No assessment yet — requires 2+ visits.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-outline-variant/10"></div>
+
+            <!-- Section 3: Growth Records -->
+            <div>
+                <h3 class="font-headline text-lg font-extrabold text-primary mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">monitoring</span>
+                    Growth Record History
+                </h3>
+                <div class="rounded-2xl overflow-hidden border border-outline-variant/10">
+                    <table class="w-full text-left">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Age (days)</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Weight (kg)</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Height (cm)</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">WHZ</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for gr in growth_records %}
+                            <tr class="hover:bg-surface transition-colors">
+                                <td class="px-6 py-4 text-sm font-medium">{{ gr.visit_date|date:"d M Y" }}</td>
+                                <td class="px-6 py-4 text-sm text-on-surface-variant">{{ gr.age_in_days }}</td>
+                                <td class="px-6 py-4 text-sm font-bold text-primary">{{ gr.weight_kg }}</td>
+                                <td class="px-6 py-4 text-sm text-on-surface-variant">{{ gr.height_cm }}</td>
+                                <td class="px-6 py-4 text-sm">{{ gr.whz|floatformat:2|default:"—" }}</td>
+                                <td class="px-6 py-4">
+                                    {% if gr.who_classification == 'SAM' %}
+                                        <span class="px-3 py-1 rounded-full bg-error-container text-error text-[10px] font-bold uppercase">SAM</span>
+                                    {% elif gr.who_classification == 'MAM' %}
+                                        <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">MAM</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Normal</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-sm text-on-surface-variant">No growth records yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-outline-variant/10"></div>
+
+            <!-- Section 4: Vaccination Schedule -->
+            <div>
+                <h3 class="font-headline text-lg font-extrabold text-primary mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">vaccines</span>
+                    Vaccination Schedule
+                </h3>
+                <div class="rounded-2xl overflow-hidden border border-outline-variant/10">
+                    <table class="w-full text-left">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Vaccine</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Due Date</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date Given</th>
+                                <th class="px-6 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for vac in vaccinations %}
+                            <tr class="hover:bg-surface transition-colors">
+                                <td class="px-6 py-4 font-medium text-sm">{{ vac.vaccine_name }}</td>
+                                <td class="px-6 py-4 text-sm text-on-surface-variant">{{ vac.due_date|date:"d M Y" }}</td>
+                                <td class="px-6 py-4 text-sm text-on-surface-variant">{{ vac.date_given|date:"d M Y"|default:"—" }}</td>
+                                <td class="px-6 py-4">
+                                    {% if vac.status == 'ADMINISTERED' %}
+                                        <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold uppercase">Administered</span>
+                                    {% elif vac.status == 'DEFAULTED' %}
+                                        <span class="px-3 py-1 rounded-full bg-error-container/30 text-error text-[10px] font-bold uppercase">Overdue</span>
+                                    {% elif vac.status == 'CONTRAINDICATED' %}
+                                        <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">Contraindicated</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-sm text-on-surface-variant">No vaccination records yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="border-t border-outline-variant/10 pt-6 text-center">
+                <p class="text-xs text-on-surface-variant">
+                    This document is a digital export from the BlueCradle Infant Health Monitoring System.
+                    For clinical decisions, always consult a qualified health professional.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bottom Download Button -->
+    <div class="flex justify-center">
+        <a href="{% url 'parent:chdr_download' %}">
+            <button class="flex items-center gap-2 px-8 py-4 rounded-xl bg-secondary text-white font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all text-lg">
+                <span class="material-symbols-outlined">download</span>
+                Download as PDF
+            </button>
+        </a>
+    </div>
+
+</div>
+{% endblock %}

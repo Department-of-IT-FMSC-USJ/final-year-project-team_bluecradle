@@ -1,0 +1,281 @@
+{% extends 'core_module/base.html' %}
+{% load static %}
+
+{% block head_and_body %}
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+
+<!-- Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-72 flex flex-col py-6 bg-slate-50 border-r border-slate-200/20 z-50">
+    <div class="px-6 mb-8">
+        <h1 class="text-2xl font-bold text-[#002444]">BlueCradle</h1>
+        <p class="text-xs font-medium text-slate-500 tracking-wider">Parent Portal</p>
+    </div>
+
+    <nav class="flex-1 space-y-1 overflow-y-auto no-scrollbar">
+        <a data-nav="dashboard"
+           class="flex items-center gap-3 text-slate-600 rounded-xl px-4 py-3 mx-2 transition-colors hover:bg-slate-200"
+           href="{% url 'parent:dashboard' %}">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-medium">Dashboard</span>
+        </a>
+
+        <a data-nav="growth"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'parent:growth' %}">
+            <span class="material-symbols-outlined">monitoring</span>
+            <span class="font-medium">Growth Monitoring</span>
+        </a>
+
+        <a data-nav="vaccinations"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'parent:vaccinations' %}">
+            <span class="material-symbols-outlined">vaccines</span>
+            <span class="font-medium">Vaccinations</span>
+        </a>
+
+        <a data-nav="sessions"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'parent:clinic_sessions' %}">
+            <span class="material-symbols-outlined">event_note</span>
+            <span class="font-medium">Clinic Sessions</span>
+        </a>
+
+        <a data-nav="notifications"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl justify-between"
+           href="{% url 'parent:notifications' %}">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="font-medium">Notifications</span>
+            </div>
+            {% if unread_count %}
+            <span class="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ unread_count }}</span>
+            {% endif %}
+        </a>
+
+        <a data-nav="chdr"
+           class="flex items-center gap-3 text-slate-600 px-4 py-3 mx-2 hover:bg-slate-200 transition-colors rounded-xl"
+           href="{% url 'parent:chdr' %}">
+            <span class="material-symbols-outlined">download</span>
+            <span class="font-medium">Download CHDR</span>
+        </a>
+    </nav>
+
+    <!-- User Profile Card -->
+    <div class="mt-auto px-4">
+        <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {{ request.user.parent_profile.full_name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-on-surface">{{ request.user.parent_profile.full_name|upper }}</p>
+                    <p class="text-xs text-on-surface-variant">PHN: {{ request.user.parent_profile.phn }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 mt-2">
+            <a href="{% url 'user:user_logout' %}"
+               class="flex items-center gap-3 text-error px-4 py-3 mx-0 hover:bg-error-container/20 transition-colors rounded-xl w-full">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="font-medium text-sm">Logout</span>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<!-- Main Content Area -->
+<main class="ml-72 flex-1 flex flex-col">
+    {% block body_content %}
+    {% endblock %}
+</main>
+
+<!-- Floating Chat Assistant (Parent — multilingual) -->
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div class="bg-white shadow-2xl rounded-2xl border border-outline-variant/10 hidden overflow-hidden" style="height: 520px; width: 380px;" id="parent-chat-panel">
+        <div class="bg-secondary p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-lg">smart_toy</span>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-white leading-none">BlueCradle Assistant</p>
+                    <p class="text-[10px] text-secondary-container">Health Guide for Parents</p>
+                </div>
+            </div>
+            <!-- Language Selector -->
+            <div class="flex gap-1">
+                <button onclick="setLang('EN')" id="lang-EN" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-white/30 text-white transition-all">EN</button>
+                <button onclick="setLang('SI')" id="lang-SI" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-white/10 text-white/70 transition-all">SIN</button>
+                <button onclick="setLang('TA')" id="lang-TA" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-white/10 text-white/70 transition-all">TA</button>
+            </div>
+        </div>
+
+        <div class="p-4 bg-surface flex flex-col" style="height: 464px;">
+            <div id="parent-chat-messages" class="flex-1 overflow-y-auto mb-3 pr-1" style="scroll-behavior: smooth;">
+                <div class="bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6">
+                    Hello! How can I help you with your baby's health today?
+                </div>
+            </div>
+            <div class="relative">
+                <input id="parent-chat-input"
+                       class="w-full pl-4 pr-10 py-2.5 rounded-xl border-none bg-surface-container-lowest text-xs focus:ring-2 focus:ring-secondary/20 shadow-inner"
+                       placeholder="Ask about your baby's health…"
+                       type="text">
+                <button id="parent-chat-send" class="absolute right-2 top-1/2 -translate-y-1/2 text-secondary">
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <button id="parent-chat-toggle" class="w-14 h-14 bg-secondary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-2xl">chat</span>
+    </button>
+</div>
+
+<!-- Active nav highlight -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const activeNav = "{{ active_nav }}";
+    document.querySelectorAll('nav a[data-nav]').forEach(link => {
+        link.style.backgroundColor = '';
+        link.style.color = '';
+        link.classList.remove('text-white');
+        link.classList.add('text-slate-600');
+        if (link.getAttribute('data-nav') === activeNav) {
+            link.style.backgroundColor = '#1A3A5C';
+            link.style.color = 'white';
+            link.classList.remove('text-slate-600');
+            link.classList.add('text-white');
+        }
+    });
+});
+</script>
+
+<!-- Parent Chatbot Script -->
+<script>
+let currentLang = 'EN';
+
+function setLang(lang) {
+    currentLang = lang;
+    ['EN', 'SI', 'TA'].forEach(l => {
+        const btn = document.getElementById('lang-' + l);
+        if (l === lang) {
+            btn.classList.replace('bg-white/10', 'bg-white/30');
+            btn.classList.replace('text-white/70', 'text-white');
+        } else {
+            btn.classList.replace('bg-white/30', 'bg-white/10');
+            btn.classList.replace('text-white', 'text-white/70');
+        }
+    });
+}
+
+(function () {
+    const panel      = document.getElementById('parent-chat-panel');
+    const toggleBtn  = document.getElementById('parent-chat-toggle');
+    const input      = document.getElementById('parent-chat-input');
+    const sendBtn    = document.getElementById('parent-chat-send');
+    const messages   = document.getElementById('parent-chat-messages');
+
+    function getCsrf() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+
+    function appendMessage(text, sender) {
+        const bubble = document.createElement('div');
+        bubble.className = sender === 'user'
+            ? 'bg-secondary/10 rounded-xl p-3 text-xs text-on-surface mb-2 text-right ml-6'
+            : 'bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6';
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendLoading() {
+        const el = document.createElement('div');
+        el.id = 'parent-chat-loading';
+        el.className = 'bg-surface-container-high rounded-xl p-3 text-xs text-on-surface mb-2 mr-6 italic opacity-60';
+        el.textContent = 'Thinking…';
+        messages.appendChild(el);
+        messages.scrollTop = messages.scrollHeight;
+        return el;
+    }
+
+    function loadHistory() {
+        fetch('/api/chatbot/history/', {
+            headers: { 'X-CSRFToken': getCsrf() }
+        })
+        .then(r => r.json())
+        .then(data => {
+            messages.innerHTML = '';
+            data.forEach(log => {
+                if (log.role === 'PARENT') {
+                    appendMessage(log.user_message, 'user');
+                    appendMessage(log.bot_response, 'bot');
+                }
+            });
+        })
+        .catch(() => {});
+    }
+
+    function sendMessage() {
+        const message = input.value.trim();
+        if (!message) return;
+
+        input.value = '';
+        appendMessage(message, 'user');
+        const loader = appendLoading();
+
+        fetch('/api/chatbot/parent/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrf()
+            },
+            body: JSON.stringify({ message: message, language: currentLang })
+        })
+        .then(r => r.json())
+        .then(data => {
+            loader.remove();
+            appendMessage(data.bot_response, 'bot');
+        })
+        .catch(() => {
+            loader.remove();
+            appendMessage('Sorry, something went wrong. Please try again.', 'bot');
+        });
+    }
+
+    toggleBtn.addEventListener('click', function () {
+        const isOpen = !panel.classList.contains('hidden');
+        if (isOpen) {
+            panel.classList.add('hidden');
+        } else {
+            panel.classList.remove('hidden');
+            loadHistory();
+            input.focus();
+        }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+    document.addEventListener('click', function (e) {
+        if (!panel.contains(e.target) && !toggleBtn.contains(e.target)) {
+            panel.classList.add('hidden');
+        }
+    });
+})();
+</script>
+
+</body>
+{% endblock %}

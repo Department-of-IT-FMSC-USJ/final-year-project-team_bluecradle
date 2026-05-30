@@ -1,0 +1,174 @@
+{% extends 'parent_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'parent:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Notifications</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Notifications</h1>
+        <p class="text-sm text-on-surface-variant mt-1">
+            {% if unread_count %}
+                {{ unread_count }} unread notification{{ unread_count|pluralize }}
+            {% else %}
+                All caught up
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Notifications List -->
+        <div class="col-span-12 lg:col-span-8">
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10 flex items-center justify-between">
+                    <h3 class="font-headline text-lg font-bold text-primary">All Notifications</h3>
+                    {% if unread_count %}
+                    <button onclick="markAllRead()"
+                        class="text-xs font-bold text-secondary hover:underline">
+                        Mark all as read
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div class="divide-y divide-outline-variant/10">
+                    {% for notification in notifications %}
+                    <div id="notif-{{ notification.id }}"
+                         class="px-8 py-6 flex items-start gap-5 hover:bg-surface transition-colors cursor-pointer
+                             {% if not notification.is_read %}bg-primary-fixed/10{% endif %}"
+                         onclick="markRead({{ notification.id }}, this)">
+
+                        <!-- Icon -->
+                        <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0
+                            {% if notification.notification_type == 'DEFAULTER' %}bg-error-container text-error
+                            {% elif notification.notification_type == 'ML_RISK' %}bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant
+                            {% elif notification.notification_type == 'VAC_REMINDER' %}bg-secondary-container/30 text-secondary
+                            {% elif notification.notification_type == 'CLINIC_REMINDER' %}bg-primary-fixed text-primary
+                            {% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">
+                                {% if notification.notification_type == 'DEFAULTER' %}warning
+                                {% elif notification.notification_type == 'ML_RISK' %}ecg_heart
+                                {% elif notification.notification_type == 'VAC_REMINDER' %}vaccines
+                                {% elif notification.notification_type == 'CLINIC_REMINDER' %}event
+                                {% else %}notifications{% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-4">
+                                <p class="font-bold text-sm text-on-surface">{{ notification.title }}</p>
+                                {% if not notification.is_read %}
+                                <span class="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5"></span>
+                                {% endif %}
+                            </div>
+                            <p class="text-sm text-on-surface-variant mt-1 leading-relaxed">{{ notification.body }}</p>
+                            <p class="text-[10px] text-outline mt-2">{{ notification.created_at|date:"d M Y, H:i" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="px-8 py-16 text-center">
+                        <span class="material-symbols-outlined text-5xl text-outline-variant block mb-3">notifications_off</span>
+                        <p class="text-sm text-on-surface-variant">No notifications yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Summary -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+
+            <!-- Summary Card -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Summary</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-on-surface-variant">Total</span>
+                        <span class="text-xl font-extrabold text-primary font-headline">{{ notifications|length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-outline-variant/10 pt-4">
+                        <span class="text-sm text-on-surface-variant">Unread</span>
+                        <span class="text-xl font-extrabold {% if unread_count %}text-error{% else %}text-secondary{% endif %} font-headline">
+                            {{ unread_count }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Type Legend -->
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Types</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-error-container flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1">warning</span>
+                        </div>
+                        <span class="text-sm text-on-surface-variant">Defaulter Alert</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-tertiary-fixed-dim/30 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-on-tertiary-fixed-variant text-sm" style="font-variation-settings:'FILL' 1">ecg_heart</span>
+                        </div>
+                        <span class="text-sm text-on-surface-variant">Health Risk Alert</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-secondary-container/30 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">vaccines</span>
+                        </div>
+                        <span class="text-sm text-on-surface-variant">Vaccination Reminder</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-primary-fixed flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">event</span>
+                        </div>
+                        <span class="text-sm text-on-surface-variant">Clinic Reminder</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function getCsrf() {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : '';
+}
+
+function markRead(id, el) {
+    fetch(`/api/parent/notifications/${id}/read/`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrf()
+        }
+    })
+    .then(r => {
+        if (r.ok) {
+            el.classList.remove('bg-primary-fixed/10');
+            const dot = el.querySelector('.bg-primary.rounded-full');
+            if (dot) dot.remove();
+        }
+    })
+    .catch(() => {});
+}
+
+function markAllRead() {
+    const items = document.querySelectorAll('[id^="notif-"]');
+    items.forEach(el => {
+        const id = el.id.replace('notif-', '');
+        markRead(id, el);
+    });
+    const btn = document.querySelector('[onclick="markAllRead()"]');
+    if (btn) btn.remove();
+}
+</script>
+
+{% endblock %}

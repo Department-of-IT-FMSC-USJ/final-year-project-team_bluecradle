@@ -1,0 +1,105 @@
+{% extends 'parent_module/sub_base.html' %}
+{% load static %}
+
+{% block body_content %}
+<div class="p-8 max-w-[1600px]">
+
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+            <a href="{% url 'parent:dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="material-symbols-outlined text-xs">chevron_right</span>
+            <span class="text-primary font-semibold">Vaccinations</span>
+        </nav>
+        <h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Vaccinations</h1>
+        <p class="text-sm text-on-surface-variant mt-1">{{ infant.full_name }} · National Immunization Schedule</p>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+
+        <!-- Table -->
+        <div class="col-span-12 lg:col-span-8">
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10">
+                <div class="px-8 py-6 border-b border-outline-variant/10">
+                    <h3 class="font-headline text-lg font-bold text-primary">Vaccination Schedule</h3>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-surface-container-low">
+                        <tr>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Vaccine</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Due Date</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Date Given</th>
+                            <th class="px-8 py-4 text-[10px] font-extrabold text-outline uppercase tracking-widest">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for vac in scheduled_vaccinations %}
+                        <tr class="hover:bg-surface transition-colors">
+                            <td class="px-8 py-5 font-medium text-sm">{{ vac.vaccine_name }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">{{ vac.due_date|date:"d M Y" }}</td>
+                            <td class="px-8 py-5 text-sm text-on-surface-variant">
+                                {{ vac.date_given|date:"d M Y"|default:"—" }}
+                            </td>
+                            <td class="px-8 py-5">
+                                {% if vac.status == 'ADMINISTERED' %}
+                                    <span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-[10px] font-bold uppercase">Administered</span>
+                                {% elif vac.status == 'DEFAULTED' %}
+                                    <span class="px-3 py-1 rounded-full bg-error-container/30 text-error text-[10px] font-bold uppercase">Overdue</span>
+                                {% elif vac.status == 'CONTRAINDICATED' %}
+                                    <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">Contraindicated</span>
+                                {% else %}
+                                    <span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-8 py-8 text-center text-sm text-on-surface-variant">No vaccination schedule found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10">
+                <h3 class="font-headline text-lg font-bold text-primary mb-6">Vaccination Summary</h3>
+                <div class="space-y-3">
+                    <div class="p-4 rounded-xl bg-secondary-container/20 border-l-4 border-secondary">
+                        <p class="text-xs text-secondary font-bold mb-1">ADMINISTERED</p>
+                        <p class="text-3xl font-bold font-headline text-secondary">{{ vac_administered }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-surface-container border-l-4 border-outline-variant">
+                        <p class="text-xs text-on-surface-variant font-bold mb-1">PENDING</p>
+                        <p class="text-3xl font-bold font-headline text-on-surface-variant">{{ vac_pending }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-error-container/20 border-l-4 border-error">
+                        <p class="text-xs text-error font-bold mb-1">OVERDUE</p>
+                        <p class="text-3xl font-bold font-headline text-error">{{ vac_defaulted }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-tertiary-fixed-dim/10 border-l-4 border-tertiary-fixed-dim">
+                        <p class="text-xs text-on-tertiary-fixed-variant font-bold mb-1">CONTRAINDICATED</p>
+                        <p class="text-3xl font-bold font-headline text-on-tertiary-fixed-variant">{{ vac_contraindicated }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if vac_defaulted > 0 %}
+            <div class="bg-error-container/20 rounded-2xl p-5 border border-error/20">
+                <div class="flex gap-3 items-start">
+                    <span class="material-symbols-outlined text-error shrink-0" style="font-variation-settings:'FILL' 1">warning</span>
+                    <div>
+                        <p class="text-sm font-bold text-error">{{ vac_defaulted }} vaccine(s) overdue</p>
+                        <p class="text-xs text-on-surface-variant mt-1">Please visit your nearest clinic as soon as possible.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
