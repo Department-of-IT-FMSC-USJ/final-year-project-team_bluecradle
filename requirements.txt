@@ -1,18 +1,33 @@
-asgiref
-Django
-sqlparse
-tzdata
-djangorestframework
-celery
-redis
-numpy 
-tensorflow
-joblib
-pywebpush
-python-decouple
-reportlab
-sentence_transformers
-chromadb
-google-genai
-pdfplumber
-psycopg2-binary
+# Core Django
+Django==6.0.5
+djangorestframework==3.17.1
+python-decouple==3.8
+psycopg2-binary==2.9.12
+
+# Celery + Redis
+celery==5.6.3
+redis==8.0.0
+
+# ML
+tensorflow==2.21.0
+scikit-learn==1.8.0
+numpy==2.4.6
+joblib==1.5.3
+
+# RAG + Chatbot
+chromadb==1.5.9
+sentence-transformers==5.5.1
+google-genai==2.7.0
+
+# PDF Generation
+reportlab==4.5.1
+
+# Web Push Notifications
+py-vapid==1.9.4
+pywebpush==2.3.0
+
+# Deployment
+gunicorn==21.2.0
+
+# Async server
+uvicorn==0.48.0

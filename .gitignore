@@ -48,3 +48,10 @@ ihms/clinic_module/management/
 # Celery
 celerybeat-schedule
 celerybeat.pid
+
+# Static files collected by Django
+ihms/staticfiles/
+
+# OS
+.DS_Store
+Thumbs.db

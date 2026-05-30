@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-$c7o&!6sv(q0_%!fqv1fc_rpuiq@)p@&9u25f(^nb*c!wzi#t!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost').split(',')
 
 
 # Application definition
@@ -197,3 +197,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+# Production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
