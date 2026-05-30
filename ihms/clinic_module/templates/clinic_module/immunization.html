@@ -101,10 +101,14 @@
                     </select>
                 </div>
 
-                <button type="submit"
+                <button type="submit" id="save-vax-btn"
                     class="w-full py-2.5 rounded-xl bg-secondary text-white text-sm font-bold hover:bg-on-secondary-container transition-colors shadow-md">
                     Save Record
                 </button>
+                <div id="offline-notice" class="hidden mt-3 px-4 py-3 rounded-xl text-sm font-medium bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant">
+                    <span class="material-symbols-outlined text-sm align-middle">offline_bolt</span>
+                    Saved offline — will sync when connected.
+                </div>
             </form>
         </div>
 
@@ -152,6 +156,51 @@
         if (this.value === 'ADMINISTERED') administeredFields.classList.remove('hidden');
         if (this.value === 'DEFAULTED') defaultedFields.classList.remove('hidden');
     });
+</script>
+
+<script type="module">
+import { db } from "/static/js/db.js";
+
+const form = document.querySelector('form');
+const offlineNotice = document.getElementById('offline-notice');
+
+form.addEventListener('submit', async function(e) {
+    if (navigator.onLine) return;
+
+    e.preventDefault();
+
+    const data = new FormData(form);
+    const infantPhn = "{{ infant.phn }}";
+    const doseStatus = data.get('dose_status');
+
+    const payload = {
+        infant_phn: infantPhn,
+        session_id: data.get('session'),
+        vaccine: data.get('vaccine'),
+        dose_status: doseStatus,
+        date_administered: data.get('date_administered') || null,
+        batch_number: data.get('batch_number') || null,
+        adverse_event_noted: data.get('adverse_event_noted') === 'on',
+        adverse_event_details: data.get('adverse_event_details') || null,
+        scheduled_date: data.get('scheduled_date') || null,
+    };
+
+    const priority = doseStatus === 'DEFAULTED' ? 'CRITICAL' : 'CRITICAL';
+
+    await db.add('atomic_events', {
+        event_type: 'VACCINATION',
+        fhb_service_code: 'EPI_VACCINATION',
+        priority: priority,
+        infant_phn: infantPhn,
+        payload_json: payload,
+        event_timestamp: new Date().toISOString(),
+        is_synced: 0,
+    });
+
+    offlineNotice.classList.remove('hidden');
+    form.querySelector('#save-vax-btn').disabled = true;
+    form.querySelector('#save-vax-btn').textContent = 'Saved Offline';
+});
 </script>
 
 {% endblock %}

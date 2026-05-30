@@ -2,9 +2,10 @@ import { getUnsyncedEvents, markEventSynced } from "./db.js";
 
 const API_BASE = "/api/clinic";
 
-// ── Get JWT token from localStorage ─────────────────────────────
-function getToken() {
-  return localStorage.getItem("access_token");
+// ── CSRF helper ──────────────────────────────────────────────────
+function getCsrf() {
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : "";
 }
 
 // ── Post a single event to Django ───────────────────────────────
@@ -13,9 +14,17 @@ async function postEvent(event) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`,
+      "X-CSRFToken": getCsrf(),
     },
-    body: JSON.stringify(event.payload_json),
+    body: JSON.stringify({
+      infant: event.payload_json.infant_phn,
+      session: event.payload_json.session_id,
+      event_type: event.event_type,
+      fhb_service_code: event.fhb_service_code,
+      priority: event.priority,
+      payload_json: event.payload_json,
+      event_timestamp: event.event_timestamp,
+    }),
   });
   return response.ok;
 }
@@ -23,7 +32,6 @@ async function postEvent(event) {
 // ── Main sync function — called by Service Worker ────────────────
 export async function syncQueue() {
   const events = await getUnsyncedEvents();
-
   if (events.length === 0) return { synced: 0 };
 
   let syncedCount = 0;
@@ -36,9 +44,24 @@ export async function syncQueue() {
         syncedCount++;
       }
     } catch (err) {
-      // Network dropped mid-sync — stop and retry next time.
       console.error("Sync failed for event:", event.local_id, err);
       break;
+    }
+  }
+
+  // ── Notify PHM after successful sync ────────────────────────
+  if (syncedCount > 0) {
+    try {
+      await fetch("/api/notifications/sync-confirm/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrf(),
+        },
+        body: JSON.stringify({ record_count: syncedCount }),
+      });
+    } catch (e) {
+      console.warn("Sync confirm notification failed:", e);
     }
   }
 
@@ -47,8 +70,8 @@ export async function syncQueue() {
 
 // ── Pre-sync: pull all infants for logged-in PHM into IndexedDB ──
 export async function preSyncInfants(db) {
-  const response = await fetch("/api/infants/", {
-    headers: { Authorization: `Bearer ${getToken()}` },
+  const response = await fetch("/api/infants/list/", {
+    headers: { "X-CSRFToken": getCsrf() },
   });
 
   if (!response.ok) return;
@@ -59,42 +82,19 @@ export async function preSyncInfants(db) {
     await tx.store.put(infant);
   }
   await tx.done;
-}
 
-export async function syncQueue() {
-  const events = await getUnsyncedEvents();
-  if (events.length === 0) return { synced: 0 };
-
-  let syncedCount = 0;
-
-  for (const event of events) {
-    try {
-      const success = await postEvent(event);
-      if (success) {
-        await markEventSynced(event.local_id);
-        syncedCount++;
-      }
-    } catch (err) {
-      console.error("Sync failed for event:", event.local_id, err);
-      break;
-    }
+  // ── Cache infant pages for offline use ──────────────────────
+  const pagesToCache = [];
+  for (const infant of infants) {
+    pagesToCache.push(`/clinic/phm/infants/${infant.phn}/`);
+    pagesToCache.push(`/clinic/phm/infants/${infant.phn}/growth/`);
+    pagesToCache.push(`/clinic/phm/infants/${infant.phn}/immunization/`);
   }
+  pagesToCache.push("/clinic/phm/");
+  pagesToCache.push("/clinic/phm/infants/");
 
-  // ── Notify PHM after successful sync ──────────────────────────
-  if (syncedCount > 0) {
-    try {
-      await fetch("/api/notifications/sync-confirm/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ record_count: syncedCount }),
-      });
-    } catch (e) {
-      console.warn("Sync confirm notification failed:", e);
-    }
+  if ("serviceWorker" in navigator) {
+    const reg = await navigator.serviceWorker.ready;
+    reg.active?.postMessage({ type: "CACHE_PAGES", pages: pagesToCache });
   }
-
-  return { synced: syncedCount };
 }

@@ -39,7 +39,7 @@
                     <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Visit Date *</label>
                         <input type="date" name="visit_date" required
-                            value="{{ today }}"
+                            value="{{ today|date:'Y-m-d' }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none">
                     </div>
 
@@ -107,10 +107,14 @@
                         </select>
                     </div>
 
-                    <button type="submit"
+                    <button type="submit" id="save-growth-btn"
                         class="w-full py-2.5 rounded-xl bg-secondary text-white text-sm font-bold hover:bg-on-secondary-container transition-colors shadow-md">
                         Save Measurement
                     </button>
+                    <div id="offline-notice" class="hidden mt-3 px-4 py-3 rounded-xl text-sm font-medium bg-tertiary-fixed-dim/20 text-on-tertiary-fixed-variant">
+                        <span class="material-symbols-outlined text-sm align-middle">offline_bolt</span>
+                        Saved offline — will sync when connected.
+                    </div>
                 </form>
             </div>
         </div>
@@ -237,12 +241,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!weight || !height) return;
 
-        const whz = BlueCradleZScore.calculateWHZ(weight, height, sex);
+        const whz = window.BlueCradleZScore?.calculateWHZ(weight, height, sex);
         if (whz !== null) whzInput.value = whz;
     }
 
     weightInput.addEventListener('input', updateZScores);
     heightInput.addEventListener('input', updateZScores);
+});
+</script>
+<script type="module">
+import { db } from "/static/js/db.js";
+
+const form = document.querySelector('form');
+const offlineNotice = document.getElementById('offline-notice');
+
+form.addEventListener('submit', async function(e) {
+    // Only intercept if offline
+    if (navigator.onLine) return;
+
+    e.preventDefault();
+
+    const data = new FormData(form);
+    const visitDate = data.get('visit_date');
+    const infantPhn = "{{ infant.phn }}";
+    const sessionId = data.get('session');
+
+    const payload = {
+        infant_phn: infantPhn,
+        session_id: sessionId,
+        visit_date: visitDate,
+        weight_kg: data.get('weight_kg'),
+        height_cm: data.get('height_cm'),
+        muac_mm: data.get('muac_mm') || null,
+        whz: data.get('whz') || null,
+        waz: data.get('waz') || null,
+        haz: data.get('haz') || null,
+        bilateral_pitting_oedema: data.get('bilateral_pitting_oedema') === 'on',
+    };
+
+    // Write to atomic_events queue
+    await db.add('atomic_events', {
+        event_type: 'GROWTH_RECORD',
+        fhb_service_code: 'GM_ATTENDANCE',
+        priority: 'STANDARD',
+        infant_phn: infantPhn,
+        payload_json: payload,
+        event_timestamp: new Date().toISOString(),
+        is_synced: 0,
+    });
+
+    // Show offline confirmation
+    offlineNotice.classList.remove('hidden');
+    form.querySelector('#save-growth-btn').disabled = true;
+    form.querySelector('#save-growth-btn').textContent = 'Saved Offline';
 });
 </script>
 {% endblock %}

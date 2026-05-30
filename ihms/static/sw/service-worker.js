@@ -1,14 +1,14 @@
-import { syncQueue } from "../js/sync.js";
+async function syncQueue() {
+  const allClients = await self.clients.matchAll();
+  for (const client of allClients) {
+    client.postMessage({ type: "SYNC_REQUESTED" });
+  }
+}
 
 const CACHE_NAME = "bluecradle-v1";
+const PAGES_CACHE = "bluecradle-pages-v1";
 
-// Files to cache for offline app shell
-const APP_SHELL = [
-  "/",
-  "/static/js/db.js",
-  "/static/js/sync.js",
-  "/static/css/main.css",
-];
+const APP_SHELL = ["/static/js/db.js", "/static/js/sync.js"];
 
 // ── Install — cache app shell ────────────────────────────────────
 self.addEventListener("install", (event) => {
@@ -26,7 +26,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME)
+            .filter((key) => key !== CACHE_NAME && key !== PAGES_CACHE)
             .map((key) => caches.delete(key)),
         ),
       ),
@@ -36,27 +36,55 @@ self.addEventListener("activate", (event) => {
 
 // ── Fetch — serve from cache, fall back to network ───────────────
 self.addEventListener("fetch", (event) => {
-  // API calls always go to network — never serve from cache.
-  if (event.request.url.includes("/api/")) {
+  const url = new URL(event.request.url);
+
+  // API calls always go to network
+  if (url.pathname.startsWith("/api/")) {
     event.respondWith(fetch(event.request));
     return;
   }
 
+  // Static files — cache first
+  if (url.pathname.startsWith("/static/")) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return (
+          cached ||
+          fetch(event.request).then((response) => {
+            const clone = response.clone();
+            caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, clone));
+            return response;
+          })
+        );
+      }),
+    );
+    return;
+  }
+
+  // HTML pages — network first, fall back to cache
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request);
-    }),
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches
+          .open(PAGES_CACHE)
+          .then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request)),
   );
 });
 
-// ── Background Sync — fires when connectivity is restored ────────
+// ── Background Sync ──────────────────────────────────────────────
 self.addEventListener("sync", (event) => {
   if (event.tag === "bluecradle-sync") {
     event.waitUntil(syncQueue());
   }
 });
 
-// ── Push Notifications — receives push from Django/Celery ────────
+// ── Push Notifications ───────────────────────────────────────────
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {};
   event.waitUntil(
@@ -65,4 +93,20 @@ self.addEventListener("push", (event) => {
       icon: "/static/img/icon-192.png",
     }),
   );
+});
+
+// ── Message from page — trigger sync ────────────────────────────
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "CACHE_PAGES") {
+    const pages = event.data.pages;
+    caches.open(PAGES_CACHE).then((cache) => {
+      pages.forEach((url) => {
+        fetch(url)
+          .then((response) => {
+            if (response.ok) cache.put(url, response);
+          })
+          .catch(() => {});
+      });
+    });
+  }
 });
