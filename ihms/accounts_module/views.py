@@ -12,10 +12,7 @@ from django.urls import reverse
 def signup_role(request):
     if request.method == 'POST':
         selected_signup_role = request.POST.get('role')
-        # Store role in session for use in register view
-        request.session['signup_role'] = selected_signup_role
-        # Redirect to register view
-        return redirect('user:register')  
+        return redirect(f"{reverse('user:register')}?role={selected_signup_role}")
     
     return render(
         request,
@@ -26,7 +23,7 @@ def signup_role(request):
     )
 
 def register(request):
-    signup_role_value =  request.session.get('signup_role')
+    signup_role_value = request.GET.get('role') or request.session.get('signup_role')
 
     if signup_role_value == UserRole.PHM:
         return register_phm(request)
@@ -36,6 +33,7 @@ def register(request):
         return register_moh(request)
     else:
         return signup_role(request)
+    
 
 def register_user(registration_form):
     user = User.objects.create_user(
@@ -53,7 +51,7 @@ def register_phm(request):
             try:
                 with transaction.atomic():
                     PHM_User.objects.create(
-                        user = register_user(form),
+                        user=register_user(form),
                         full_name=form.cleaned_data['full_name'],
                         registration_number=form.cleaned_data['registration_number'],
                         contact_no=form.cleaned_data['contact_no'],
@@ -61,27 +59,30 @@ def register_phm(request):
                         operational_area=form.cleaned_data['operational_area'],
                         is_verified=False,
                     )
-                    request.session.pop('signup_role', None)
+                    
                     return redirect(f"{reverse('user:user_login')}?registered=true")
 
             except Exception as e:
-                messages.error(request, 'Registration failed. Please try again.')
+                error = 'Registration failed. Please try again.'
+                return render(request, 'accounts_module/register_phm.html', {
+                    'title': 'BlueCradle - Register as PHM',
+                    'form': form,
+                    'error': error,
+                })
         else:
-            # Add message for form validation errors
-            if form.errors:
-                messages.error(request, 'Registration failed. Please correct the errors below.')
-
+            error = 'Registration failed. Please correct the errors below.' if form.errors else None
+            return render(request, 'accounts_module/register_phm.html', {
+                'title': 'BlueCradle - Register as PHM',
+                'form': form,
+                'error': error,
+            })
     else:
-            form = PHMRegistrationForm()
-                
-    return render(
-        request, 
-        'accounts_module/register_phm.html', 
-        {
-            'title': 'BlueCradle - Register as PHM',
-            'form': form
-        }
-    )
+        form = PHMRegistrationForm()
+
+    return render(request, 'accounts_module/register_phm.html', {
+        'title': 'BlueCradle - Register as PHM',
+        'form': form,
+    })
 
 def check_email_exists(request):
     # AJAX endpoint — checks if an email already exists in the User table
@@ -138,15 +139,23 @@ def register_parent(request):
                             contact_no=form.cleaned_data.get('contact_no') or None,
                         )
 
-                request.session.pop('signup_role', None)
+                
                 return redirect(f"{reverse('user:user_login')}?registered=true&role=PARENT")
 
             except Exception as e:
-                messages.error(request, 'Registration failed. Please try again.')
+                return render(request, 'accounts_module/register_parent.html', {
+                    'title': 'BlueCradle - Register as Parent',
+                    'form': form,
+                    'error': 'Registration failed. Please try again.',
+                })
 
         else:
-            if form.errors:
-                messages.error(request, 'Registration failed. Please correct the errors below.')
+             if form.errors:
+                return render(request, 'accounts_module/register_parent.html', {
+                    'title': 'BlueCradle - Register as Parent',
+                    'form': form,
+                    'error': 'Registration failed. Please correct the errors below.',
+                })
 
     else:
         form = ParentRegistrationForm()
@@ -170,16 +179,23 @@ def register_moh(request):
                         contact_no=form.cleaned_data['contact_no'],
                         is_verified=False,
                     )
-                    request.session.pop('signup_role', None)
+                    
                     return redirect(f"{reverse('user:user_login')}?registered=true&role=MOH")
 
             except Exception as e:
-                messages.error(request, 'Registration failed. Please try again.')
+                return render(request, 'accounts_module/register_moh.html', {
+                    'title': 'BlueCradle - Register as MOH Officer',
+                    'form': form,
+                    'error': 'Registration failed. Please try again.',
+                })
 
         else:
             if form.errors:
-                messages.error(request, 'Registration failed. Please correct the errors below.')
-
+                return render(request, 'accounts_module/register_moh.html', {
+                    'title': 'BlueCradle - Register as MOH Officer',
+                    'form': form,
+                    'error': 'Registration failed. Please correct the errors below.',
+                })
     else:
         form = MOHRegistrationForm()
 
@@ -211,6 +227,7 @@ def user_login(request):
         request,
         'accounts_module/login.html',
         {
+            'title': 'BlueCradle - Login',
             'form': form
         }
     )
@@ -239,6 +256,7 @@ def role_redirect(request):
             request,
             'accounts_module/role_select_session.html',
             {
+                'title': 'Select Login Role',
                 'roles': roles
             }
         )

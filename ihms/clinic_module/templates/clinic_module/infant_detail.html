@@ -228,6 +228,19 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/10">
+                            <!-- Birth record — always shown as baseline -->
+                            <tr class="bg-primary-fixed/10">
+                                <td class="px-8 py-5 font-medium">
+                                    {{ infant.date_of_birth|date:"d M Y" }}
+                                    <span class="ml-2 px-2 py-0.5 bg-primary-fixed text-primary text-[9px] font-bold rounded-full uppercase">At Birth</span>
+                                </td>
+                                <td class="px-8 py-5 text-primary font-bold text-lg">{{ infant.birth_weight_kg }}</td>
+                                <td class="px-8 py-5">{{ infant.birth_length_cm }}</td>
+                                <td class="px-8 py-5 text-on-surface-variant">—</td>
+                                <td class="px-8 py-5">
+                                    <span class="px-3 py-1 rounded-full bg-primary-fixed text-primary text-[10px] font-bold uppercase">Birth Record</span>
+                                </td>
+                            </tr>
                             {% for gr in growth_records %}
                             <tr class="hover:bg-surface transition-colors">
                                 <td class="px-8 py-5 font-medium">{{ gr.visit_date|date:"d M Y" }}</td>
@@ -243,10 +256,6 @@
                                         <span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Normal</span>
                                     {% endif %}
                                 </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No growth records yet.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -294,6 +303,12 @@
     <!-- Tab: Vaccinations -->
     <div id="content-vaccinations" class="hidden">
         <div class="grid grid-cols-12 gap-8">
+        {% if request.GET.success == 'vaccine_saved' %}
+        <div class="col-span-12 mb-2 px-4 py-3 rounded-xl text-sm font-medium bg-secondary-container/30 text-on-secondary-container flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            Vaccination record saved successfully.
+        </div>
+        {% endif %}
 
             <!-- Table -->
             <div class="col-span-12 lg:col-span-8">

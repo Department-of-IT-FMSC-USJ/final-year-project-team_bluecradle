@@ -41,6 +41,13 @@
         </a>
     </div>
 </div>
+<!-- Success Message -->
+{% if request.GET.success == 'infant_registered' %}
+<div class="mx-8 mb-0 px-4 py-3 rounded-xl text-sm font-medium bg-secondary-container/30 text-on-secondary-container flex items-center gap-2">
+    <span class="material-symbols-outlined text-sm">check_circle</span>
+    {{ request.GET.name }} has been registered successfully.
+</div>
+{% endif %}
 <div class="p-8 flex gap-8">
 <!-- Left Canvas (Stats & Table) -->
 <div class="flex-1 space-y-8">

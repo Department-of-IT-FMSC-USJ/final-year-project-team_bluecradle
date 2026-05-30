@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import request, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -143,10 +144,8 @@ def infant_register(request):
         phm = request.user.phm_profile
         data = request.POST
 
-        # Check PHN doesn't already exist
         if Infant.objects.filter(phn=data['phn']).exists():
-            messages.error(request, f"PHN {data['phn']} is already registered.")
-            return redirect('clinic:infant_register')
+            return redirect(f"{reverse('clinic:infant_register')}?error=duplicate_phn&phn={data['phn']}")
 
         Infant.objects.create(
             phn=data['phn'],
@@ -161,19 +160,13 @@ def infant_register(request):
             registered_phm=phm,
             moh_division=phm.moh_division,
         )
-        messages.success(request, f"Infant {data['full_name']} registered successfully.")
-        return redirect('clinic:dashboard')
+        return redirect(f"{reverse('clinic:dashboard')}?success=infant_registered&name={data['full_name']}")
 
     context = {
         'title': 'BlueCradle - Infant Registration',
-        'active_nav': 'infants'
+        'active_nav': 'infants',
     }
-    
-    return render(
-        request,
-        'clinic_module/infant_register.html',
-        context,
-    )
+    return render(request, 'clinic_module/infant_register.html', context)
 
 
 @login_required
@@ -371,8 +364,7 @@ def immunization(request, phn):
             infant=infant,
             vaccine=data['vaccine']
         ).exists():
-            messages.error(request, f"A record for {data['vaccine']} already exists. Use the update function.")
-            return redirect('clinic:immunization', phn=phn)
+            return redirect(f"{reverse('clinic:immunization', args=[phn])}?error=duplicate_vaccine&vaccine={data['vaccine']}")
 
         ImmunizationEvent.objects.create(
             infant=infant,
@@ -385,8 +377,7 @@ def immunization(request, phn):
             adverse_event_details=data.get('adverse_event_details') or None,
             scheduled_date=data.get('scheduled_date') or None,
         )
-        messages.success(request, "Vaccination record saved.")
-        return redirect('clinic:infant_detail', phn=phn)
+        return redirect(f"{reverse('clinic:infant_detail', args=[phn])}?success=vaccine_saved&tab=vaccinations")
 
     context = {
         'title': 'BlueCradle - Add Immunization Event',

@@ -87,28 +87,37 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/10">
-                        {% for gr in growth_records %}
-                        <tr class="hover:bg-surface transition-colors">
-                            <td class="px-8 py-5 font-medium">{{ gr.visit_date|date:"d M Y" }}</td>
-                            <td class="px-8 py-5 text-primary font-bold text-lg">{{ gr.weight_kg }}</td>
-                            <td class="px-8 py-5">{{ gr.height_cm }}</td>
-                            <td class="px-8 py-5">{{ gr.whz|floatformat:2|default:"—" }}</td>
-                            <td class="px-8 py-5">
-                                {% if gr.who_classification == 'SAM' %}
-                                    <span class="px-3 py-1 rounded-full bg-error-container text-error text-[10px] font-bold uppercase">SAM Risk</span>
-                                {% elif gr.who_classification == 'MAM' %}
-                                    <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">MAM Risk</span>
-                                {% else %}
-                                    <span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Normal</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="px-8 py-8 text-center text-sm text-on-surface-variant">No growth records yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                            <!-- Birth record — always shown as baseline -->
+                            <tr class="bg-primary-fixed/10">
+                                <td class="px-8 py-5 font-medium">
+                                    {{ infant.date_of_birth|date:"d M Y" }}
+                                    <span class="ml-2 px-2 py-0.5 bg-primary-fixed text-primary text-[9px] font-bold rounded-full uppercase">At Birth</span>
+                                </td>
+                                <td class="px-8 py-5 text-primary font-bold text-lg">{{ infant.birth_weight_kg }}</td>
+                                <td class="px-8 py-5">{{ infant.birth_length_cm }}</td>
+                                <td class="px-8 py-5 text-on-surface-variant">—</td>
+                                <td class="px-8 py-5">
+                                    <span class="px-3 py-1 rounded-full bg-primary-fixed text-primary text-[10px] font-bold uppercase">Birth Record</span>
+                                </td>
+                            </tr>
+                            {% for gr in growth_records %}
+                            <tr class="hover:bg-surface transition-colors">
+                                <td class="px-8 py-5 font-medium">{{ gr.visit_date|date:"d M Y" }}</td>
+                                <td class="px-8 py-5 text-primary font-bold text-lg">{{ gr.weight_kg }}</td>
+                                <td class="px-8 py-5">{{ gr.height_cm }}</td>
+                                <td class="px-8 py-5">{{ gr.whz|floatformat:2|default:"—" }}</td>
+                                <td class="px-8 py-5">
+                                    {% if gr.who_classification == 'SAM' %}
+                                        <span class="px-3 py-1 rounded-full bg-error-container text-error text-[10px] font-bold uppercase">SAM Risk</span>
+                                    {% elif gr.who_classification == 'MAM' %}
+                                        <span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant text-[10px] font-bold uppercase">MAM Risk</span>
+                                    {% else %}
+                                        <span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Normal</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
                 </table>
             </div>
         </div>

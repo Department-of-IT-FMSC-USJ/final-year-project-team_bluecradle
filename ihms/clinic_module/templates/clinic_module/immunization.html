@@ -23,14 +23,11 @@
         <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/10">
             <h3 class="text-sm font-bold text-primary uppercase tracking-widest mb-6">Record Vaccination</h3>
 
-            {% if messages %}
-                {% for message in messages %}
-                <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium
-                    {% if message.tags == 'error' %}bg-error-container text-error
-                    {% else %}bg-secondary-container text-on-secondary-container{% endif %}">
-                    {{ message }}
-                </div>
-                {% endfor %}
+            {% if request.GET.error == 'duplicate_vaccine' %}
+            <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium bg-error-container text-error flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">error</span>
+                A record for {{ request.GET.vaccine }} already exists for this infant.
+            </div>
             {% endif %}
 
             <form method="POST" action="{% url 'clinic:immunization' infant.phn %}" class="space-y-4">
