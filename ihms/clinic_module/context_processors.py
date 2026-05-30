@@ -2,6 +2,9 @@ from .models import FHBAtomicEvent
 from django.conf import settings
 
 def unsynced_count(request):
+    if not request.user.is_authenticated or not hasattr(request.user, 'phm_profile'):
+        return {'unsynced_count': 0}
+    
     if request.user.is_authenticated and hasattr(request.user, 'phm_profile'):
         return {
             'unsynced_count': FHBAtomicEvent.objects.filter(
