@@ -16,6 +16,7 @@ async function postEvent(event) {
       "Content-Type": "application/json",
       "X-CSRFToken": getCsrf(),
     },
+    credentials: "include",
     body: JSON.stringify({
       infant: event.payload_json.infant_phn,
       session: event.payload_json.session_id,
@@ -29,9 +30,13 @@ async function postEvent(event) {
   return response.ok;
 }
 
-// ── Main sync function — called by Service Worker ────────────────
+// ── Main sync function ───────────────────────────────────────────
 export async function syncQueue() {
   const events = await getUnsyncedEvents();
+  console.log("syncQueue events found:", events.length);
+  for (const e of events) {
+    console.log("event:", e.local_id, e.is_synced, e.event_type);
+  }
   if (events.length === 0) return { synced: 0 };
 
   let syncedCount = 0;
@@ -58,6 +63,7 @@ export async function syncQueue() {
           "Content-Type": "application/json",
           "X-CSRFToken": getCsrf(),
         },
+        credentials: "include",
         body: JSON.stringify({ record_count: syncedCount }),
       });
     } catch (e) {
@@ -72,6 +78,7 @@ export async function syncQueue() {
 export async function preSyncInfants(db) {
   const response = await fetch("/api/infants/list/", {
     headers: { "X-CSRFToken": getCsrf() },
+    credentials: "include",
   });
 
   if (!response.ok) return;

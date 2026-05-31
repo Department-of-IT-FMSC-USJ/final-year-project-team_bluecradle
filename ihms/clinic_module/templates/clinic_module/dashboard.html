@@ -39,6 +39,11 @@
                 New Infant Record
             </button>
         </a>
+        <button onclick="prepareOffline()"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container text-on-surface text-sm font-bold hover:bg-surface-container-high transition-colors border border-outline-variant/20 px-5 py-2.5">
+            <span class="material-symbols-outlined text-lg">download_for_offline</span>
+            Prepare Offline
+        </button>
     </div>
 </div>
 <!-- Success Message -->
@@ -502,6 +507,52 @@ setInterval(fetchNotifications, 60000);
     });
 
 })();
+</script>
+
+<script>
+async function prepareOffline() {
+    if (!('serviceWorker' in navigator)) {
+        alert('Service Worker not supported.');
+        return;
+    }
+    try {
+        const btn = document.querySelector('[onclick="prepareOffline()"]');
+        btn.textContent = 'Caching...';
+        btn.disabled = true;
+
+        const reg = await navigator.serviceWorker.ready;
+
+        // Fetch infant list and cache pages
+        const response = await fetch('/api/infants/list/', {
+            credentials: 'include',
+            headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch infants');
+
+        const infants = await response.json();
+        const pages = [];
+
+        for (const infant of infants) {
+            pages.push(`/clinic/phm/infants/${infant.phn}/`);
+            pages.push(`/clinic/phm/infants/${infant.phn}/growth/`);
+            pages.push(`/clinic/phm/infants/${infant.phn}/immunization/`);
+        }
+        pages.push('/clinic/phm/');
+        pages.push('/clinic/phm/infants/');
+        pages.push('/clinic/phm/sessions/');
+
+        reg.active?.postMessage({ type: 'CACHE_PAGES', pages });
+
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> Ready Offline';
+        btn.classList.replace('bg-surface-container', 'bg-secondary-container/30');
+        btn.classList.replace('text-on-surface', 'text-secondary');
+
+    } catch (err) {
+        console.error('Prepare offline failed:', err);
+        alert('Failed to prepare offline. Please try again.');
+    }
+}
 </script>
 
 {% endblock %}

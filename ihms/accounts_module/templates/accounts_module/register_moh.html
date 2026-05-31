@@ -13,7 +13,7 @@
         <p class="text-on-surface-variant mt-2">Create your administrative account. Your account will be verified before access is granted.</p>
     </header>
 
-    <form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
+    <form class="space-y-12" method="POST" action="{% url 'user:register' %}?role={{ request.GET.role }}">
         {% csrf_token %}
 
         {% if error %}
