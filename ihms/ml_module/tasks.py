@@ -64,6 +64,26 @@ def run_ml_risk_assessment(self, infant_phn, growth_record_id):
                 )
                 send_push_notification.delay(notification.id)
 
+                # ── Notify Parent if linked ───────────────────────────────
+                try:
+                    from accounts_module.models import Parent
+                    parent = Parent.objects.filter(phn=infant.phn).first()
+                    if parent:
+                        parent_notification = NotificationLog.objects.create(
+                            recipient=parent.user,
+                            notification_type=NotificationLog.NotificationType.ML_RISK,
+                            title=f'Health Alert — {infant.first_name}',
+                            body=(
+                                f'{infant.first_name}\'s recent growth measurements indicate a '
+                                f'{"severe" if result["risk_level"] == "SAM" else "moderate"} '
+                                f'nutritional risk. Please contact your PHM immediately.'
+                            ),
+                            infant=infant,
+                        )
+                        send_push_notification.delay(parent_notification.id)
+                except Exception:
+                    pass  # Don't fail the whole task if parent notification fails
+
         return {'status': 'success', 'risk_level': result['risk_level']}
 
     except Exception as exc:
