@@ -330,6 +330,20 @@ def growth_record(request, phn):
             bilateral_pitting_oedema='bilateral_pitting_oedema' in data,
         )
 
+        FHBAtomicEvent.objects.create(
+            infant=infant,
+            session=saved_record.session,
+            phm=phm,
+            moh_division=phm.moh_division,
+            event_type='GROWTH_RECORD',
+            fhb_service_code='GM_ATTENDANCE',
+            priority='STANDARD',
+            payload_json={'infant_phn': phn, 'growth_record_id': saved_record.id},
+            event_timestamp=timezone.now(),
+            is_synced=True,
+            synced_at=timezone.now(),
+        )
+
         from ml_module.tasks import run_ml_risk_assessment
         run_ml_risk_assessment.delay(
             infant_phn=phn,
@@ -361,7 +375,7 @@ def immunization(request, phn):
     immunization_events = ImmunizationEvent.objects.filter(
         infant=infant
     ).order_by('scheduled_date')
-
+    
     if request.method == 'POST':
         data = request.POST
         dose_status = data['dose_status']
@@ -381,9 +395,45 @@ def immunization(request, phn):
             date_administered=data.get('date_administered') or None,
             batch_number=data.get('batch_number') or None,
             adverse_event_noted='adverse_event_noted' in data,
-            adverse_event_details=data.get('adverse_event_details') or None,
+            adverse_event_detail=data.get('adverse_event_details') or None,
             scheduled_date=data.get('scheduled_date') or None,
         )
+
+        FHBAtomicEvent.objects.create(
+            infant=infant,
+            session_id=data['session'],
+            phm=phm,
+            moh_division=phm.moh_division,
+            event_type='VACCINATION',
+            fhb_service_code='EPI_VACCINATION',
+            priority='CRITICAL',
+            payload_json={'infant_phn': phn, 'vaccine': data['vaccine'], 'dose_status': dose_status},
+            event_timestamp=timezone.now(),
+            is_synced=True,
+            synced_at=timezone.now(),
+        )
+
+        # ── Sync ScheduledVaccination status ──────────────────────
+        vaccine_label = dict(ImmunizationEvent.VACCINE_CHOICES).get(data['vaccine'], '')
+        vaccine_name_part = vaccine_label.split('(')[0].strip()
+
+        scheduled = ScheduledVaccination.objects.filter(
+            infant=infant,
+            vaccine_name=data['vaccine']
+        ).first()
+
+        if scheduled:
+            if dose_status == 'ADMINISTERED':
+                scheduled.status = ScheduledVaccination.Status.ADMINISTERED
+                scheduled.date_given = data.get('date_administered') or None
+                scheduled.administered_by = request.user
+            elif dose_status == 'DEFAULTED':
+                scheduled.status = ScheduledVaccination.Status.DEFAULTED
+            elif dose_status == 'CONTRAINDICATED':
+                scheduled.status = ScheduledVaccination.Status.CONTRAINDICATED
+                scheduled.notes = data.get('adverse_event_detail') or ''
+            scheduled.save()
+
         return redirect(f"{reverse('clinic:infant_detail', args=[phn])}?success=vaccine_saved&tab=vaccinations")
 
     context = {
@@ -871,10 +921,90 @@ class FHBAtomicEventCreateView(APIView):
     def post(self, request):
         serializer = FHBAtomicEventSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(
+            event = serializer.save(
                 phm=request.user.phm_profile,
                 moh_division=request.user.phm_profile.moh_division
             )
+
+            # ── Process payload into actual records ──────────────
+            payload = event.payload_json
+            event_type = event.event_type
+
+            try:
+                if event_type == 'GROWTH_RECORD':
+                    infant = Infant.objects.get(phn=payload['infant_phn'])
+                    age_in_days = (
+                        date.fromisoformat(payload['visit_date']) - infant.date_of_birth
+                    ).days
+
+                    saved_record = GrowthRecord.objects.create(
+                        infant=infant,
+                        session_id=payload['session_id'],
+                        visit_date=payload['visit_date'],
+                        age_in_days=age_in_days,
+                        weight_kg=payload['weight_kg'],
+                        height_cm=payload['height_cm'],
+                        muac_mm=payload.get('muac_mm') or None,
+                        whz=payload.get('whz') or None,
+                        waz=payload.get('waz') or None,
+                        haz=payload.get('haz') or None,
+                        bilateral_pitting_oedema=payload.get('bilateral_pitting_oedema', False),
+                    )
+
+                    # Trigger ML assessment
+                    from ml_module.tasks import run_ml_risk_assessment
+                    run_ml_risk_assessment.delay(
+                        infant_phn=payload['infant_phn'],
+                        growth_record_id=saved_record.id
+                    )
+
+                elif event_type == 'VACCINATION':
+                    infant = Infant.objects.get(phn=payload['infant_phn'])
+                    dose_status = payload['dose_status']
+
+                    # Skip if already exists
+                    if not ImmunizationEvent.objects.filter(
+                        infant=infant,
+                        vaccine=payload['vaccine']
+                    ).exists():
+                        ImmunizationEvent.objects.create(
+                            infant=infant,
+                            session_id=payload['session_id'],
+                            vaccine=payload['vaccine'],
+                            dose_status=dose_status,
+                            date_administered=payload.get('date_administered') or None,
+                            batch_number=payload.get('batch_number') or None,
+                            adverse_event_noted=payload.get('adverse_event_noted', False),
+                            adverse_event_detail=payload.get('adverse_event_details') or None,
+                            scheduled_date=payload.get('scheduled_date') or None,
+                        )
+
+                        # Update ScheduledVaccination status
+                        scheduled = ScheduledVaccination.objects.filter(
+                            infant=infant,
+                            vaccine_name=payload['vaccine']
+                        ).first()
+
+                        if scheduled:
+                            if dose_status == 'ADMINISTERED':
+                                scheduled.status = ScheduledVaccination.Status.ADMINISTERED
+                                scheduled.date_given = payload.get('date_administered') or None
+                                scheduled.administered_by = request.user
+                            elif dose_status == 'DEFAULTED':
+                                scheduled.status = ScheduledVaccination.Status.DEFAULTED
+                            elif dose_status == 'CONTRAINDICATED':
+                                scheduled.status = ScheduledVaccination.Status.CONTRAINDICATED
+                                scheduled.notes = payload.get('adverse_event_details') or ''
+                            scheduled.save()
+
+            except Exception as e:
+                # Log but don't fail — atomic event is already saved
+                print(f"Failed to process sync payload: {e}")
+
+            event.is_synced = True
+            event.synced_at = timezone.now()
+            event.save(update_fields=['is_synced', 'synced_at'])
+
             return Response({'status': 'synced'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -12,7 +12,7 @@
         <p class="text-on-surface-variant mt-2">Create your account to access your child's health records.</p>
       </header>
 
-      <form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
+      <form class="space-y-12" method="POST" action="{% url 'user:register' %}?role={{ request.GET.role }}">
         {% csrf_token %}
 
         {% if error %}

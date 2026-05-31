@@ -46,7 +46,10 @@ rag_docs/
 ihms/clinic_module/management/
 
 # Celery
-celerybeat-schedule
+celerybeat-schedule*
+*.db
+*.shm
+*.wal
 celerybeat.pid
 
 # Static files collected by Django
@@ -55,3 +58,6 @@ ihms/staticfiles/
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker env
+.env.docker

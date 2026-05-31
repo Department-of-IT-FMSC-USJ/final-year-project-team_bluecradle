@@ -12,7 +12,7 @@
 <h2 class="text-3xl font-headline font-bold text-on-background">Midwife Onboarding</h2>
 <p class="text-on-surface-variant mt-2">Create your professional account to begin clinical session management.</p>
 </header>
-<form class="space-y-12" method="POST" action="{% url 'user:register' %}" id="registrationForm">
+<form class="space-y-12" method="POST" action="{% url 'user:register' %}?role={{ request.GET.role }}">
 {% csrf_token %}
 <!-- System messages — only for role_redirect errors -->
 {% if error %}

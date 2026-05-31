@@ -23,7 +23,11 @@ def signup_role(request):
     )
 
 def register(request):
-    signup_role_value = request.GET.get('role') or request.session.get('signup_role')
+    signup_role_value = (
+        request.POST.get('role') or 
+        request.GET.get('role') or 
+        request.session.get('signup_role')
+    )
 
     if signup_role_value == UserRole.PHM:
         return register_phm(request)

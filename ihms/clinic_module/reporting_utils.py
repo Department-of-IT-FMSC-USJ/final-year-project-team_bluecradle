@@ -1,6 +1,7 @@
 from django.db.models import Count
 from .models import FHBAtomicEvent
-from datetime import date
+from datetime import datetime
+from django.utils import timezone
 
 
 def generate_h523_data(phm, target_date=None):
@@ -11,9 +12,18 @@ def generate_h523_data(phm, target_date=None):
     if target_date is None:
         target_date = date.today()
 
+    # Convert local date to UTC range to handle timezone correctly
+    local_tz = timezone.get_current_timezone()
+    start_local = datetime.combine(target_date, datetime.min.time())
+    end_local = datetime.combine(target_date, datetime.max.time())
+    
+    start_utc = timezone.make_aware(start_local, local_tz)
+    end_utc = timezone.make_aware(end_local, local_tz)
+
     events = FHBAtomicEvent.objects.filter(
         phm=phm,
-        event_timestamp__date=target_date
+        event_timestamp__gte=start_utc,
+        event_timestamp__lte=end_utc,
     ).values('fhb_service_code').annotate(count=Count('id'))
 
     # Map service codes to H 523 column names

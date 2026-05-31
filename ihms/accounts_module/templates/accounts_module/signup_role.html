@@ -15,8 +15,7 @@
 <h2 class="text-on-surface text-3xl font-extrabold mb-2">Choose Your Role</h2>
 <p class="text-on-surface-variant">Select how you will be using BlueCradle to continue your registration.</p>
 </div>
-<form method="POST" id="role-form" action="{% url 'user:register' %}">
-{% csrf_token %}
+<form method="GET" id="role-form" action="{% url 'user:register' %}">
 <!-- Hidden role input -->
 <input type="hidden" id="role-input" name="role" value="">
 
